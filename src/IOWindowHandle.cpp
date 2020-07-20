@@ -1,3 +1,27 @@
+/*
+	MIT License
+
+	Copyright (c) 2020 x4kkk3r
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
 #include "IOWindowHandle.h"
 
 IOWindowHandle::IOWindowHandle() noexcept
@@ -24,7 +48,7 @@ void IOWindowHandle::DestroyAndSetWindowHandleNull() noexcept
 	}
 }
 
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, LPCSTR extendedClassName, LPCSTR title, int width, int height, HINSTANCE hInstance, LPVOID pParam) noexcept
+bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, HINSTANCE hInstance, void *pParam) noexcept
 {
 	RECT windowRect =
 	{
@@ -36,8 +60,8 @@ bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, LPCSTR extendedClassN
 	hWnd = CreateWindowEx
 	(
 		extendedStyle,
-		extendedClassName,
-		title,
+		extendedClassName.data(),
+		title.data(),
 		IO_WINDOW_STYLE,
 		IO_WINDOW_POSITION,
 		IO_WINDOW_POSITION,
@@ -55,7 +79,7 @@ bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, LPCSTR extendedClassN
 	return true;
 }
 
-const HWND& IOWindowHandle::GetWindowHandle() noexcept
+HWND IOWindowHandle::GetWindowHandle() noexcept
 {
 	return this->hWnd;
 }

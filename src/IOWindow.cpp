@@ -1,11 +1,33 @@
+/*
+	MIT License
+
+	Copyright (c) 2020 x4kkk3r
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
 #include "IOWindow.h"
 
 IOWindow::IOWindow() noexcept
 {
 	this->extendedClass = std::make_unique<IOWindowExtendedClass>();
 	this->handle = std::make_unique<IOWindowHandle>();
-
-	this->lastError = "IOWindow: no errors";
 }
 
 IOWindow::~IOWindow() noexcept
@@ -23,7 +45,7 @@ bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidt
 {
 	if (!extendedClass->MakeWindowClassEx(IOWindow::WndProcSetup))
 	{
-		lastError = "IOWindow: failed to make IOWindowClassEx";
+		lastError = "[IOWindow.cpp]: Failed to make IOWindowClassEx";
 		return false;
 	}
 	
@@ -31,14 +53,14 @@ bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidt
 	(
 		0,
 		extendedClass->GetWindowClassExName(),
-		windowTitle.data(),
+		windowTitle,
 		screenWidth,
 		screenHeight,
 		extendedClass->GetWindowInstanceHandle(),
 		this
 	))
 	{
-		lastError = "IOWindow: failed to create window";
+		lastError = "[IOWindow.cpp]: Failed to make IOWindowHandle";
 		return false;
 	}
 
@@ -217,7 +239,13 @@ void IOWindow::GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept
 		*pWindowPosY = windowRect.top;
 }
 
-const std::string& IOWindow::GetLastError() const noexcept
+void IOWindow::SetWindowTitle(std::string_view windowTitle) noexcept
+{
+	if (SetWindowText(handle->GetWindowHandle(), windowTitle.data()) == 0)
+		lastError = "IOWindow: failed to change window title";
+}
+
+std::string const& IOWindow::GetLastError() noexcept
 {
 	return this->lastError;
 }
