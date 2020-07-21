@@ -24,75 +24,17 @@
 
 #include "IOKeyboard.h"
 
-IOKeyboard::IOEvent::IOEvent(Type type, unsigned char key) noexcept
-{
-	this->type = type;
-	this->key = key;
-}
-
-IOKeyboard::IOEvent::IOEvent(const IOEvent &event) noexcept
-{
-	this->type = event.type;
-	this->key = event.key;
-}
-
-bool IOKeyboard::IOEvent::IsPressed() const noexcept
-{
-	return type == Type::Pressed;
-}
-
-bool IOKeyboard::IOEvent::IsReleased() const noexcept
-{
-	return type == Type::Released;
-}
-
-unsigned char IOKeyboard::IOEvent::GetKey() const noexcept
-{
-	return this->key;
-}
-
-void IOKeyboard::OnKeyPressed(unsigned char key) noexcept
-{
-	this->PushEvent(std::forward<IOEvent::Type>(IOEvent::Type::Pressed), std::forward<unsigned char>(key));
-}
-
-void IOKeyboard::OnKeyReleased(unsigned char key) noexcept
-{
-	this->PushEvent(std::forward<IOEvent::Type>(IOEvent::Type::Released), std::forward<unsigned char>(key));
-}
-
-void IOKeyboard::PushEvent(IOEvent::Type &&type, unsigned char &&key) noexcept
-{
-	keyStates[static_cast<size_t>(key)] = (type == IOEvent::Type::Pressed);
-
-	eventBuffer.emplace(type, key);
-	this->TrimEventBuffer();
-}
-
-void IOKeyboard::TrimEventBuffer() noexcept
-{
-	while (eventBuffer.size() > MAX_BUFFER_SIZE)
-	{
-		eventBuffer.pop();
-	}
-}
-
-void IOKeyboard::ClearKeyStates() noexcept
-{
-	keyStates.reset();
-}
-
 bool IOKeyboard::IsEventBufferEmpty() const noexcept
 {
 	return eventBuffer.empty();
 }
 
-std::optional<IOKeyboard::IOEvent> IOKeyboard::ReadKeyboardEvent() noexcept
+std::optional<IOKeyboardEvent> IOKeyboard::ReadKeyboardEvent() noexcept
 {
 	if (!eventBuffer.empty())
 	{
-		IOEvent keyboardEvent = this->eventBuffer.front();
-		this->eventBuffer.pop();
+		IOKeyboardEvent keyboardEvent = eventBuffer.front();
+		eventBuffer.pop();
 		return keyboardEvent;
 	}
 
@@ -117,4 +59,35 @@ void IOKeyboard::DisableAutorepeat() noexcept
 bool IOKeyboard::IsAutorepeatEnabled() const noexcept
 {
 	return this->autorepeat;
+}
+
+void IOKeyboard::OnKeyPressed(unsigned char key) noexcept
+{
+	this->PushEvent(IOKeyboardEvent(IOKeyboardEvent::Type::Pressed, key));
+}
+
+void IOKeyboard::OnKeyReleased(unsigned char key) noexcept
+{
+	this->PushEvent(IOKeyboardEvent(IOKeyboardEvent::Type::Released, key));
+}
+
+void IOKeyboard::PushEvent(IOKeyboardEvent const &event) noexcept
+{
+	keyStates[static_cast<size_t>(event.GetKey())] = event.IsPressed();
+
+	eventBuffer.push(event);
+	this->TrimEventBuffer();
+}
+
+void IOKeyboard::TrimEventBuffer() noexcept
+{
+	while (eventBuffer.size() > IOKeyboard::MAX_BUFFER_SIZE)
+	{
+		eventBuffer.pop();
+	}
+}
+
+void IOKeyboard::ClearKeyStates() noexcept
+{
+	keyStates.reset();
 }

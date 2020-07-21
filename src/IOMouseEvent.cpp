@@ -22,64 +22,38 @@
 	SOFTWARE.
 */
 
-#include "IOWindowHandle.h"
+#include "IOMouseEvent.h"
 
-IOWindowHandle::IOWindowHandle() noexcept
+IOMouseEvent::IOMouseEvent(Type type, long x, long y, bool isLeftPressed, bool isRightPressed) noexcept
 {
-	this->hWnd = nullptr;
+	this->type = type;
+	this->x = x;
+	this->y = y;
+	this->isLeftPressed = isLeftPressed;
+	this->isRightPressed = isRightPressed;
 }
 
-IOWindowHandle::~IOWindowHandle() noexcept
+IOMouseEvent::Type IOMouseEvent::GetType() const noexcept
 {
-	this->DestroyWindowHandle();
+	return this->type;
 }
 
-void IOWindowHandle::DestroyWindowHandle() noexcept
+bool IOMouseEvent::IsLeftPressed() const noexcept
 {
-	this->DestroyAndSetWindowHandleNull();
+	return this->isLeftPressed;
 }
 
-void IOWindowHandle::DestroyAndSetWindowHandleNull() noexcept
+bool IOMouseEvent::IsRightPressed() const noexcept
 {
-	if (hWnd != nullptr)
-	{
-		DestroyWindow(hWnd);
-		hWnd = nullptr;
-	}
+	return this->isRightPressed;
 }
 
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, HINSTANCE hInstance, void *pParam) noexcept
+long IOMouseEvent::GetPosX() const noexcept
 {
-	RECT windowRect =
-	{
-		0, 0,
-		width, height
-	};
-	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
-
-	hWnd = CreateWindowEx
-	(
-		extendedStyle,
-		extendedClassName.data(),
-		title.data(),
-		IO_WINDOW_STYLE,
-		IO_WINDOW_POSITION,
-		IO_WINDOW_POSITION,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		nullptr,
-		nullptr,
-		hInstance,
-		pParam
-	);
-
-	if (hWnd == nullptr)
-		return false;
-
-	return true;
+	return this->x;
 }
 
-HWND IOWindowHandle::GetWindowHandle() noexcept
+long IOMouseEvent::GetPosY() const noexcept
 {
-	return this->hWnd;
+	return this->y;
 }

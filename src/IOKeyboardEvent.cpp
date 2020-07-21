@@ -22,64 +22,31 @@
 	SOFTWARE.
 */
 
-#include "IOWindowHandle.h"
+#include "IOKeyboardEvent.h"
 
-IOWindowHandle::IOWindowHandle() noexcept
+IOKeyboardEvent::IOKeyboardEvent(Type type, unsigned char key) noexcept
 {
-	this->hWnd = nullptr;
+	this->type = type;
+	this->key = key;
 }
 
-IOWindowHandle::~IOWindowHandle() noexcept
+IOKeyboardEvent::IOKeyboardEvent(const IOKeyboardEvent &event) noexcept
 {
-	this->DestroyWindowHandle();
+	this->type = event.type;
+	this->key = event.key;
 }
 
-void IOWindowHandle::DestroyWindowHandle() noexcept
+bool IOKeyboardEvent::IsPressed() const noexcept
 {
-	this->DestroyAndSetWindowHandleNull();
+	return type == Type::Pressed;
 }
 
-void IOWindowHandle::DestroyAndSetWindowHandleNull() noexcept
+bool IOKeyboardEvent::IsReleased() const noexcept
 {
-	if (hWnd != nullptr)
-	{
-		DestroyWindow(hWnd);
-		hWnd = nullptr;
-	}
+	return type == Type::Released;
 }
 
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, HINSTANCE hInstance, void *pParam) noexcept
+unsigned char IOKeyboardEvent::GetKey() const noexcept
 {
-	RECT windowRect =
-	{
-		0, 0,
-		width, height
-	};
-	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
-
-	hWnd = CreateWindowEx
-	(
-		extendedStyle,
-		extendedClassName.data(),
-		title.data(),
-		IO_WINDOW_STYLE,
-		IO_WINDOW_POSITION,
-		IO_WINDOW_POSITION,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		nullptr,
-		nullptr,
-		hInstance,
-		pParam
-	);
-
-	if (hWnd == nullptr)
-		return false;
-
-	return true;
-}
-
-HWND IOWindowHandle::GetWindowHandle() noexcept
-{
-	return this->hWnd;
+	return this->key;
 }

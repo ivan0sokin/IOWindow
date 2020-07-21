@@ -22,47 +22,44 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_KEYBOARD_H
-#define _IO_KEYBOARD_H
+#ifndef _IO_MOUSE_EVENT_H
+#define _IO_MOUSE_EVENT_H
 
-#include <queue>
-#include <bitset>
-#include <optional>
-
-#include "IOKeyboardEvent.h"
-#include "IOKeyboardMappings.h"
-
-class IOKeyboard
+class IOMouseEvent
 {
-	friend class IOWindow;
+	friend class IOMouse;
 public:
-	IOKeyboard() = default;
-	IOKeyboard(IOKeyboard const &other) = delete;
-	~IOKeyboard() = default;
+	enum class Type
+	{
+		LeftPressed,
+		LeftReleased,
+		RightPressed,
+		RightReleased,
+		WheelUp,
+		WheelDown,
+		Move,
+		Enter,
+		Leave
+	};
 
-	bool IsEventBufferEmpty() const noexcept;
+	IOMouseEvent(Type type, long x, long y, bool isLeftPressed, bool isRightPressed) noexcept;
+	~IOMouseEvent() = default;
 
-	std::optional<IOKeyboardEvent> ReadKeyboardEvent() noexcept;
-	bool IsKeyPressed(unsigned char key) const noexcept;
+	Type GetType() const noexcept;
 
-	void EnableAutorepeat() noexcept;
-	void DisableAutorepeat() noexcept;
-	bool IsAutorepeatEnabled() const noexcept;
+	bool IsLeftPressed() const noexcept;
+	bool IsRightPressed() const noexcept;
+
+	long GetPosX() const noexcept;
+	long GetPosY() const noexcept;
 private:
-	static constexpr size_t NUM_KEYS = static_cast<size_t>(256);
-	static constexpr size_t MAX_BUFFER_SIZE = static_cast<size_t>(16);
+	Type type;
 
-	std::queue<IOKeyboardEvent> eventBuffer;
-	std::bitset<NUM_KEYS> keyStates;
-	bool autorepeat = false;
+	long x;
+	long y;
 
-	void OnKeyPressed(unsigned char key) noexcept;
-	void OnKeyReleased(unsigned char key) noexcept;
-
-	void ClearKeyStates() noexcept;
-
-	void PushEvent(IOKeyboardEvent const &event) noexcept;
-	void TrimEventBuffer() noexcept;
+	bool isLeftPressed;
+	bool isRightPressed;
 };
 
 #endif

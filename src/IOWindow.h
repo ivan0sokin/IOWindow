@@ -27,10 +27,7 @@
 
 #include "IOWindowExtendedClass.h"
 #include "IOWindowHandle.h"
-
-#include "IOKeyboard.h"
-
-#include <memory>
+#include "IOInput.h"
 
 class IOWindow
 {
@@ -46,10 +43,15 @@ public:
 	bool MakeWindow(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept;
 	void CloseWindow() noexcept;
 	
+	void EnableMouseCursor() noexcept;
+	void DisableMouseCursor() noexcept;
+	bool IsMouseCursorEnabled() const noexcept;
+
 	bool ShouldBeClosed() const noexcept;
 	void PollWindowMessages() noexcept;
 
-	void SetKeyboardInput(std::shared_ptr<IOKeyboard> &keyboardInput) noexcept;
+	void SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept;
+	void SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept;
 
 	void GetWindowTitle(char *pWindowTitle) noexcept;
 	void GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept;
@@ -61,12 +63,17 @@ public:
 private:
 	std::unique_ptr<IOWindowExtendedClass> extendedClass;
 	std::unique_ptr<IOWindowHandle> handle;
-
-	std::shared_ptr<IOKeyboard> keyboard;
+	std::unique_ptr<IOInput> input;
 
 	bool shouldBeClosed = false;
+	bool isMouseCursorEnabled = true;
 
 	std::string lastError;
+
+	void ShowMouseCursor() noexcept;
+	void HideMouseCursor() noexcept;
+	void ConfineMouseCursor() noexcept;
+	void FreeMouseCursor() noexcept;
 
 	static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK WndProcThunk(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;

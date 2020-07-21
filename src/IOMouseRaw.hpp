@@ -22,47 +22,24 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_KEYBOARD_H
-#define _IO_KEYBOARD_H
+#ifndef _IO_MOUSE_RAW_HPP
+#define _IO_MOUSE_RAW_HPP
 
-#include <queue>
-#include <bitset>
-#include <optional>
-
-#include "IOKeyboardEvent.h"
-#include "IOKeyboardMappings.h"
-
-class IOKeyboard
+struct IOMouseRaw
 {
-	friend class IOWindow;
-public:
-	IOKeyboard() = default;
-	IOKeyboard(IOKeyboard const &other) = delete;
-	~IOKeyboard() = default;
+	long dx;
+	long dy;
 
-	bool IsEventBufferEmpty() const noexcept;
-
-	std::optional<IOKeyboardEvent> ReadKeyboardEvent() noexcept;
-	bool IsKeyPressed(unsigned char key) const noexcept;
-
-	void EnableAutorepeat() noexcept;
-	void DisableAutorepeat() noexcept;
-	bool IsAutorepeatEnabled() const noexcept;
-private:
-	static constexpr size_t NUM_KEYS = static_cast<size_t>(256);
-	static constexpr size_t MAX_BUFFER_SIZE = static_cast<size_t>(16);
-
-	std::queue<IOKeyboardEvent> eventBuffer;
-	std::bitset<NUM_KEYS> keyStates;
-	bool autorepeat = false;
-
-	void OnKeyPressed(unsigned char key) noexcept;
-	void OnKeyReleased(unsigned char key) noexcept;
-
-	void ClearKeyStates() noexcept;
-
-	void PushEvent(IOKeyboardEvent const &event) noexcept;
-	void TrimEventBuffer() noexcept;
+	IOMouseRaw(long dx, long dy)
+	{
+		this->dx = dx;
+		this->dy = dy;
+	}
+	IOMouseRaw(IOMouseRaw const &other)
+	{
+		this->dx = other.dx;
+		this->dy = other.dy;
+	}
 };
 
 #endif

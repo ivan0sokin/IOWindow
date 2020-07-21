@@ -22,47 +22,32 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_KEYBOARD_H
-#define _IO_KEYBOARD_H
+#ifndef _IO_INPUT_H
+#define _IO_INPUT_H
 
-#include <queue>
-#include <bitset>
-#include <optional>
+#include "IOKeyboard.h"
+#include "IOMouse.h"
 
-#include "IOKeyboardEvent.h"
-#include "IOKeyboardMappings.h"
+#include <memory>
 
-class IOKeyboard
+class IOInput
 {
-	friend class IOWindow;
 public:
-	IOKeyboard() = default;
-	IOKeyboard(IOKeyboard const &other) = delete;
-	~IOKeyboard() = default;
+	IOInput() = default;
+	IOInput(IOInput const &other) = delete;
+	~IOInput() = default;
 
-	bool IsEventBufferEmpty() const noexcept;
+	void SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept;
+	void SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept;
 
-	std::optional<IOKeyboardEvent> ReadKeyboardEvent() noexcept;
-	bool IsKeyPressed(unsigned char key) const noexcept;
+	bool HasMouse() const noexcept;
+	bool HasKeyboard() const noexcept;
 
-	void EnableAutorepeat() noexcept;
-	void DisableAutorepeat() noexcept;
-	bool IsAutorepeatEnabled() const noexcept;
+	std::shared_ptr<IOMouse> const& GetMouse() const noexcept;
+	std::shared_ptr<IOKeyboard> const& GetKeyboard() const noexcept;
 private:
-	static constexpr size_t NUM_KEYS = static_cast<size_t>(256);
-	static constexpr size_t MAX_BUFFER_SIZE = static_cast<size_t>(16);
-
-	std::queue<IOKeyboardEvent> eventBuffer;
-	std::bitset<NUM_KEYS> keyStates;
-	bool autorepeat = false;
-
-	void OnKeyPressed(unsigned char key) noexcept;
-	void OnKeyReleased(unsigned char key) noexcept;
-
-	void ClearKeyStates() noexcept;
-
-	void PushEvent(IOKeyboardEvent const &event) noexcept;
-	void TrimEventBuffer() noexcept;
+	std::shared_ptr<IOMouse> mouse;
+	std::shared_ptr<IOKeyboard> keyboard;
 };
 
 #endif

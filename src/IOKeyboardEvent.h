@@ -22,47 +22,28 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_KEYBOARD_H
-#define _IO_KEYBOARD_H
+#ifndef _IO_KEYBOARD_EVENT_H
+#define _IO_KEYBOARD_EVENT_H
 
-#include <queue>
-#include <bitset>
-#include <optional>
-
-#include "IOKeyboardEvent.h"
-#include "IOKeyboardMappings.h"
-
-class IOKeyboard
+class IOKeyboardEvent
 {
-	friend class IOWindow;
 public:
-	IOKeyboard() = default;
-	IOKeyboard(IOKeyboard const &other) = delete;
-	~IOKeyboard() = default;
+	enum class Type
+	{
+		Pressed,
+		Released
+	};
 
-	bool IsEventBufferEmpty() const noexcept;
+	IOKeyboardEvent(Type type, unsigned char key) noexcept;
+	IOKeyboardEvent(const IOKeyboardEvent &event) noexcept;
+	~IOKeyboardEvent() = default;
 
-	std::optional<IOKeyboardEvent> ReadKeyboardEvent() noexcept;
-	bool IsKeyPressed(unsigned char key) const noexcept;
-
-	void EnableAutorepeat() noexcept;
-	void DisableAutorepeat() noexcept;
-	bool IsAutorepeatEnabled() const noexcept;
+	bool IsPressed() const noexcept;
+	bool IsReleased() const noexcept;
+	unsigned char GetKey() const noexcept;
 private:
-	static constexpr size_t NUM_KEYS = static_cast<size_t>(256);
-	static constexpr size_t MAX_BUFFER_SIZE = static_cast<size_t>(16);
-
-	std::queue<IOKeyboardEvent> eventBuffer;
-	std::bitset<NUM_KEYS> keyStates;
-	bool autorepeat = false;
-
-	void OnKeyPressed(unsigned char key) noexcept;
-	void OnKeyReleased(unsigned char key) noexcept;
-
-	void ClearKeyStates() noexcept;
-
-	void PushEvent(IOKeyboardEvent const &event) noexcept;
-	void TrimEventBuffer() noexcept;
+	Type type;
+	unsigned char key;
 };
 
 #endif

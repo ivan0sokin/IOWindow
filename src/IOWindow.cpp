@@ -28,6 +28,7 @@ IOWindow::IOWindow() noexcept
 {
 	this->extendedClass = std::make_unique<IOWindowExtendedClass>();
 	this->handle = std::make_unique<IOWindowHandle>();
+	this->input = std::make_unique<IOInput>();
 }
 
 IOWindow::~IOWindow() noexcept
@@ -37,15 +38,61 @@ IOWindow::~IOWindow() noexcept
 
 void IOWindow::CloseWindow() noexcept
 {
+	this->EnableMouseCursor();
+
 	handle->DestroyWindowHandle();
 	extendedClass->DestroyWindowClassEx();
+}
+
+void IOWindow::EnableMouseCursor() noexcept
+{
+	isMouseCursorEnabled = true;
+
+	this->ShowMouseCursor();
+	this->FreeMouseCursor();
+}
+
+void IOWindow::DisableMouseCursor() noexcept
+{
+	isMouseCursorEnabled = false;
+
+	this->HideMouseCursor();
+	this->ConfineMouseCursor();
+}
+
+void IOWindow::ShowMouseCursor() noexcept
+{
+	while (ShowCursor(TRUE) < 0);
+}
+
+void IOWindow::HideMouseCursor() noexcept
+{
+	while (ShowCursor(FALSE) >= 0);
+}
+
+void IOWindow::ConfineMouseCursor() noexcept
+{
+	RECT screenRect;
+	GetClientRect(handle->GetWindowHandle(), &screenRect);
+	MapWindowPoints(handle->GetWindowHandle(), nullptr, reinterpret_cast<POINT*>(&screenRect), 2);
+	ClipCursor(&screenRect);
+}
+
+void IOWindow::FreeMouseCursor() noexcept
+{
+	ClipCursor(nullptr);
+}
+
+bool IOWindow::IsMouseCursorEnabled() const noexcept
+{
+	return this->isMouseCursorEnabled;
 }
 
 bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept
 {
 	if (!extendedClass->MakeWindowClassEx(IOWindow::WndProcSetup))
 	{
-		lastError = "[IOWindow.cpp]: Failed to make IOWindowClassEx";
+		lastError = "[IOWindow]: Failed to make IOWindowClassEx";
 		return false;
 	}
 	
@@ -60,7 +107,7 @@ bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidt
 		this
 	))
 	{
-		lastError = "[IOWindow.cpp]: Failed to make IOWindowHandle";
+		lastError = "[IOWindow]: Failed to make IOWindowHandle";
 		return false;
 	}
 
@@ -77,8 +124,6 @@ bool IOWindow::ShouldBeClosed() const noexcept
 void IOWindow::PollWindowMessages() noexcept
 {
 	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
-
 	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 	{
 		if (msg.message == WM_QUIT)
@@ -91,9 +136,14 @@ void IOWindow::PollWindowMessages() noexcept
 	}
 }
 
-void IOWindow::SetKeyboardInput(std::shared_ptr<IOKeyboard>& keyboardInput) noexcept
+void IOWindow::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept
 {
-	keyboard = keyboardInput;
+	input->SetKeyboardInput(keyboardInput);
+}
+
+void IOWindow::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
+{
+	input->SetMouseInput(mouseInput);
 }
 
 LRESULT IOWindow::WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -130,24 +180,42 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_KILLFOCUS:
 		{
-			if (keyboard == nullptr)
+			if (!input->HasKeyboard())
 				break;
 
-			keyboard->ClearKeyStates();
+			input->GetKeyboard()->ClearKeyStates();
+
+			break;
+		}
+		case WM_ACTIVATE:
+		{
+			if (!this->IsMouseCursorEnabled())
+			{
+				if (wParam & WA_ACTIVE)
+				{
+					this->ConfineMouseCursor();
+					this->HideMouseCursor();
+				}
+				else
+				{
+					this->FreeMouseCursor();
+					this->ShowMouseCursor();
+				}
+			}
 
 			break;
 		}
 		case WM_KEYDOWN:
 		{
-			if (keyboard == nullptr)
+			if (!input->HasKeyboard())
 				break;
 			
 			case WM_SYSKEYDOWN:
 			{
-				if (!(lParam & 0x40000000) || keyboard->IsAutorepeatEnabled())
+				if (!(lParam & 0x40000000) || input->GetKeyboard()->IsAutorepeatEnabled())
 				{
 					wParam = IOWindow::MapLeftRightKeys(wParam, lParam);
-					keyboard->OnKeyPressed(static_cast<unsigned char>(wParam));
+					input->GetKeyboard()->OnKeyPressed(static_cast<unsigned char>(wParam));
 				}
 			}
 
@@ -155,19 +223,137 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_KEYUP:
 		{
-			if (keyboard == nullptr)
+			if (!input->HasKeyboard())
 				break;
 
 			case WM_SYSKEYUP:
 			{
 				wParam = IOWindow::MapLeftRightKeys(wParam, lParam);
-				keyboard->OnKeyReleased(static_cast<unsigned char>(wParam));
+				input->GetKeyboard()->OnKeyReleased(static_cast<unsigned char>(wParam));
 			}
 
 			break;
 		}
+		case WM_MOUSEMOVE:
+		{
+			if (!input->HasMouse())
+				break;
+
+			if (!this->IsMouseCursorEnabled())
+			{
+				if (input->GetMouse()->IsInWindow())
+				{
+					SetCapture(hWnd);
+					input->GetMouse()->OnMouseEnter();
+
+					this->ShowMouseCursor();
+				}
+			}
+
+			const POINTS mouseCursorPosition = MAKEPOINTS(lParam);
+			if (this->IsCursorInScreenBounds(mouseCursorPosition.x, mouseCursorPosition.y))
+			{
+				input->GetMouse()->OnMouseMove(mouseCursorPosition.x, mouseCursorPosition.y);
+				if (!input->GetMouse()->IsInWindow())
+				{
+					SetCapture(hWnd);
+					input->GetMouse()->OnMouseEnter();
+				}
+			}
+			else
+			{
+				if (wParam & (MK_LBUTTON | MK_RBUTTON))
+				{
+					input->GetMouse()->OnMouseMove(mouseCursorPosition.x, mouseCursorPosition.y);
+				}
+				else
+				{
+					ReleaseCapture();
+					input->GetMouse()->OnMouseLeave();
+				}
+			}
+
+			break;
+		}
+		case WM_LBUTTONDOWN:
+		{
+			if (!input->HasMouse())
+				break;
+
+			SetForegroundWindow(hWnd);
+
+			if (!this->IsMouseCursorEnabled())
+			{
+				this->ConfineMouseCursor();
+				this->HideMouseCursor();
+			}
+
+			input->GetMouse()->OnLeftPressed();
+
+			break;
+		}
+		case WM_LBUTTONUP:
+		{
+			if (!input->HasMouse())
+				break;
+
+			input->GetMouse()->OnLeftReleased();
+
+			const POINTS mosueCursorPosition = MAKEPOINTS(lParam);
+			if (!this->IsCursorInScreenBounds(mosueCursorPosition.x, mosueCursorPosition.y))
+			{
+				ReleaseCapture();
+				input->GetMouse()->OnMouseLeave();
+			}
+
+			break;
+		}
+		case WM_RBUTTONDOWN:
+		{
+			if (!input->HasMouse())
+				break;
+
+			input->GetMouse()->OnRightPressed();
+
+			break;
+		}
+		case WM_RBUTTONUP:
+		{
+			if (!input->HasMouse())
+				break;
+
+			input->GetMouse()->OnRightReleased();
+
+			POINTS mouseCursorPosition = MAKEPOINTS(lParam);
+			if (!this->IsCursorInScreenBounds(mouseCursorPosition.x, mouseCursorPosition.y))
+			{
+				ReleaseCapture();
+				input->GetMouse()->OnMouseLeave();
+			}
+
+			break;
+		}
+		case WM_MOUSEWHEEL:
+		{
+			if (!input->HasMouse())
+				break;
+
+			short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+			input->GetMouse()->OnWheelDelta(wheelDelta);
+
+			break;
+		}
+		case WM_INPUT:
+		{
+			break;
+		}
+		default:
+		{
+			return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		}
 	}
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+	return 0;
 }
 
 WPARAM IOWindow::MapLeftRightKeys(WPARAM wParam, LPARAM lParam) noexcept
@@ -213,14 +399,19 @@ void IOWindow::GetWindowTitle(char *pWindowTitle) noexcept
 	if (pWindowTitle != nullptr)
 	{
 		size_t titleLength = static_cast<size_t>(GetWindowTextLength(handle->GetWindowHandle()));
-		GetWindowText(handle->GetWindowHandle(), pWindowTitle, static_cast<int>(titleLength) + 1);
+		if (GetWindowText(handle->GetWindowHandle(), pWindowTitle, static_cast<int>(titleLength) + 1) == 0)
+			lastError = "[IOWindow]: Failed to get window title";
 	}
 }
 
 void IOWindow::GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept
 {
 	RECT screenRect;
-	GetClientRect(handle->GetWindowHandle(), &screenRect);
+	if (!GetClientRect(handle->GetWindowHandle(), &screenRect))
+	{
+		lastError = "[IOWindow]: Failed to get screen resolution";
+		return;
+	}
 	
 	if (pWindowScreenWidth != nullptr)
 		*pWindowScreenWidth = screenRect.right;
@@ -231,7 +422,11 @@ void IOWindow::GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsi
 void IOWindow::GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept
 {
 	RECT windowRect;
-	GetWindowRect(handle->GetWindowHandle(), &windowRect);
+	if (!GetWindowRect(handle->GetWindowHandle(), &windowRect))
+	{
+		lastError = "[IOWindow]: Failed to get window position";
+		return;
+	}
 
 	if (pWindowPosX != nullptr)
 		*pWindowPosX = windowRect.left;
@@ -241,8 +436,8 @@ void IOWindow::GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept
 
 void IOWindow::SetWindowTitle(std::string_view windowTitle) noexcept
 {
-	if (SetWindowText(handle->GetWindowHandle(), windowTitle.data()) == 0)
-		lastError = "IOWindow: failed to change window title";
+	if (!SetWindowText(handle->GetWindowHandle(), windowTitle.data()))
+		lastError = "[IOWindow]: Failed to change window title";
 }
 
 std::string const& IOWindow::GetLastError() noexcept

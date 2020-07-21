@@ -22,64 +22,34 @@
 	SOFTWARE.
 */
 
-#include "IOWindowHandle.h"
+#include "IOInput.h"
 
-IOWindowHandle::IOWindowHandle() noexcept
+void IOInput::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept
 {
-	this->hWnd = nullptr;
+	keyboard = keyboardInput;
 }
 
-IOWindowHandle::~IOWindowHandle() noexcept
+void IOInput::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
 {
-	this->DestroyWindowHandle();
+	mouse = mouseInput;
 }
 
-void IOWindowHandle::DestroyWindowHandle() noexcept
+bool IOInput::HasMouse() const noexcept
 {
-	this->DestroyAndSetWindowHandleNull();
+	return (mouse != nullptr);
 }
 
-void IOWindowHandle::DestroyAndSetWindowHandleNull() noexcept
+bool IOInput::HasKeyboard() const noexcept
 {
-	if (hWnd != nullptr)
-	{
-		DestroyWindow(hWnd);
-		hWnd = nullptr;
-	}
+	return (keyboard != nullptr);
 }
 
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, HINSTANCE hInstance, void *pParam) noexcept
+std::shared_ptr<IOMouse> const& IOInput::GetMouse() const noexcept
 {
-	RECT windowRect =
-	{
-		0, 0,
-		width, height
-	};
-	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
-
-	hWnd = CreateWindowEx
-	(
-		extendedStyle,
-		extendedClassName.data(),
-		title.data(),
-		IO_WINDOW_STYLE,
-		IO_WINDOW_POSITION,
-		IO_WINDOW_POSITION,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		nullptr,
-		nullptr,
-		hInstance,
-		pParam
-	);
-
-	if (hWnd == nullptr)
-		return false;
-
-	return true;
+	return this->mouse;
 }
 
-HWND IOWindowHandle::GetWindowHandle() noexcept
+std::shared_ptr<IOKeyboard> const& IOInput::GetKeyboard() const noexcept
 {
-	return this->hWnd;
+	return this->keyboard;
 }
