@@ -90,6 +90,8 @@ bool IOWindow::IsMouseCursorEnabled() const noexcept
 
 bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept
 {
+	assert(windowTitle.data() != nullptr);
+
 	if (!extendedClass->MakeWindowClassEx(IOWindow::WndProcSetup))
 	{
 		lastError = "[IOWindow]: Failed to make IOWindowClassEx";
@@ -144,6 +146,30 @@ void IOWindow::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput
 void IOWindow::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
 {
 	input->SetMouseInput(mouseInput);
+}
+
+void IOWindow::EnableRawMouseInput() noexcept
+{
+	RAWINPUTDEVICE rawMouseInput;
+	rawMouseInput.usUsagePage = 0x01;
+	rawMouseInput.usUsage = 0x02;
+	rawMouseInput.dwFlags = 0;
+	rawMouseInput.hwndTarget = handle->GetWindowHandle();
+
+	if (!RegisterRawInputDevices(&rawMouseInput, 1, sizeof(RAWINPUTDEVICE)))
+		lastError = "[IOWindow]: Failed to enable raw mouse input";
+}
+
+void IOWindow::DisableRawMouseInput() noexcept
+{
+	RAWINPUTDEVICE rawMouseInput;
+	rawMouseInput.usUsagePage = 0x01;
+	rawMouseInput.usUsage = 0x02;
+	rawMouseInput.dwFlags = RIDEV_REMOVE;
+	rawMouseInput.hwndTarget = nullptr;
+
+	if (!RegisterRawInputDevices(&rawMouseInput, 1, sizeof(RAWINPUTDEVICE)))
+		lastError = "[IOWindow]: Failed to disable raw mouse input";
 }
 
 LRESULT IOWindow::WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -246,7 +272,7 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 					SetCapture(hWnd);
 					input->GetMouse()->OnMouseEnter();
 
-					this->ShowMouseCursor();
+					this->HideMouseCursor();
 				}
 			}
 
@@ -345,6 +371,40 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_INPUT:
 		{
+			if (!input->HasMouse())
+				break;
+			
+			unsigned int size;
+			if (GetRawInputData
+			(
+				reinterpret_cast<HRAWINPUT>(lParam),
+				RID_INPUT,
+				nullptr,
+				&size,
+				sizeof(RAWINPUTHEADER)) == -1
+			)
+				break;
+
+			BYTE* rawData = new BYTE[size];
+
+			if (GetRawInputData
+			(
+				reinterpret_cast<HRAWINPUT>(lParam),
+				RID_INPUT,
+				rawData,
+				&size,
+				sizeof(RAWINPUTHEADER)) != size
+			)
+				break;
+
+			auto& rawInput = reinterpret_cast<const RAWINPUT&>(*rawData);
+
+			if (rawInput.header.dwType == RIM_TYPEMOUSE && (rawInput.data.mouse.lLastX != 0 || rawInput.data.mouse.lLastY != 0))
+			{
+				input->GetMouse()->OnRawMouseMove(rawInput.data.mouse.lLastX, rawInput.data.mouse.lLastY);
+			}
+
+			delete rawData;
 			break;
 		}
 		default:
@@ -436,8 +496,21 @@ void IOWindow::GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept
 
 void IOWindow::SetWindowTitle(std::string_view windowTitle) noexcept
 {
-	if (!SetWindowText(handle->GetWindowHandle(), windowTitle.data()))
-		lastError = "[IOWindow]: Failed to change window title";
+	if (windowTitle.data() != nullptr)
+	{
+		if (!SetWindowText(handle->GetWindowHandle(), windowTitle.data()))
+			lastError = "[IOWindow]: Failed to change window title";
+	}
+}
+
+HWND IOWindow::GetWindowHandle() const noexcept
+{
+	return handle->GetWindowHandle();
+}
+
+HINSTANCE IOWindow::GetWindowInstanceHandle() const noexcept
+{
+	return extendedClass->GetWindowInstanceHandle();
 }
 
 std::string const& IOWindow::GetLastError() noexcept

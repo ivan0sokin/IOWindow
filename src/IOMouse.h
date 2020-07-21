@@ -50,10 +50,6 @@ public:
 	bool IsRightPressed() const noexcept;
 	bool IsEventBufferEmpty() const noexcept;
 	bool IsRawBufferEmpty() const noexcept;
-
-	void EnableRawInput() noexcept;
-	void DisableRawInput() noexcept;
-	bool IsRawInputEnabled() const noexcept;
 private:
 	static constexpr size_t MAX_BUFFER_SIZE = static_cast<size_t>(16);
 	static constexpr short _WHEEL_DELTA = static_cast<short>(120);

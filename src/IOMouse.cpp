@@ -83,21 +83,6 @@ bool IOMouse::IsRawBufferEmpty() const noexcept
 	return rawBuffer.empty();
 }
 
-void IOMouse::EnableRawInput() noexcept
-{
-	isRawEnabled = true;
-}
-
-void IOMouse::DisableRawInput() noexcept
-{
-	isRawEnabled = false;
-}
-
-bool IOMouse::IsRawInputEnabled() const noexcept
-{
-	return this->isRawEnabled;
-}
-
 void IOMouse::OnMouseMove(long x, long y) noexcept
 {
 	this->x = x;

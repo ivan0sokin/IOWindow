@@ -29,6 +29,8 @@
 #include "IOWindowHandle.h"
 #include "IOInput.h"
 
+#include <cassert>
+
 class IOWindow
 {
 public:
@@ -53,11 +55,17 @@ public:
 	void SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept;
 	void SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept;
 
+	void EnableRawMouseInput() noexcept;
+	void DisableRawMouseInput() noexcept;
+
 	void GetWindowTitle(char *pWindowTitle) noexcept;
 	void GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept;
 	void GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept;
 
 	void SetWindowTitle(std::string_view windowTitle) noexcept;
+
+	HWND GetWindowHandle() const noexcept;
+	HINSTANCE GetWindowInstanceHandle() const noexcept;
 
 	std::string const& GetLastError() noexcept;
 private:
