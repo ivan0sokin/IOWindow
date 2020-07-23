@@ -22,58 +22,12 @@
 	SOFTWARE.
 */
 
-#include "IOWindowHandle.h"
+#ifndef _IO_CALLBACKS_HPP
+#define _IO_CALLBACKS_HPP
 
-IOWindowHandle::IOWindowHandle() noexcept
-{
-	this->hWnd = nullptr;
-}
+typedef void(*IOWindowScreenSizeCallbackFunction)(unsigned long windowScreenWidth, unsigned long windowScreenHeight);
+typedef void(*IOWindowScreenMoveCallbackFunction)(long windowScreenPosX, long windowScreenPosY);
+typedef void(*IOWindowSizeCallbackFunction)(unsigned long windowWidth, unsigned long windowHeight);
+typedef void(*IOWindowMoveCallbackFunction)(long windowPosX, long windowPosY);
 
-IOWindowHandle::~IOWindowHandle() noexcept
-{
-	this->DestroyWindowHandle();
-}
-
-bool IOWindowHandle::DestroyWindowHandle() noexcept
-{
-	if (!DestroyWindow(hWnd))
-		return false;
-
-	return true;
-}
-
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept
-{
-	RECT windowRect =
-	{
-		0, 0,
-		width, height
-	};
-	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
-
-	hWnd = CreateWindowEx
-	(
-		extendedStyle,
-		extendedClassName.data(),
-		title.data(),
-		IO_WINDOW_STYLE,
-		IO_WINDOW_POSITION,
-		IO_WINDOW_POSITION,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		nullptr,
-		nullptr,
-		GetModuleHandle(nullptr),
-		pParam
-	);
-
-	if (hWnd == nullptr)
-		return false;
-
-	return true;
-}
-
-HWND IOWindowHandle::GetWindowHandle() const noexcept
-{
-	return this->hWnd;
-}
+#endif

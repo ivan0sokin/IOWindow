@@ -22,58 +22,34 @@
 	SOFTWARE.
 */
 
-#include "IOWindowHandle.h"
+#ifndef _IO_CURSOR_H
+#define _IO_CURSOR_H
 
-IOWindowHandle::IOWindowHandle() noexcept
+#include <Windows.h>
+
+class IOCursor
 {
-	this->hWnd = nullptr;
-}
+	friend class IOWindow;
+public:
+	IOCursor() = default;
+	IOCursor(HWND windowHandle) noexcept;
+	IOCursor(IOCursor const &other);
+	~IOCursor() = default;
 
-IOWindowHandle::~IOWindowHandle() noexcept
-{
-	this->DestroyWindowHandle();
-}
+	IOCursor& operator=(IOCursor const &other) noexcept;
 
-bool IOWindowHandle::DestroyWindowHandle() noexcept
-{
-	if (!DestroyWindow(hWnd))
-		return false;
+	void EnableCursor() noexcept;
+	void DisableCursor() noexcept;
+	bool IsCursorEnabled() const noexcept;
+private:
+	bool isCursorEnabled = true;
 
-	return true;
-}
+	HWND windowHandle;
 
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept
-{
-	RECT windowRect =
-	{
-		0, 0,
-		width, height
-	};
-	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
+	void ShowMouseCursor() noexcept;
+	void HideMouseCursor() noexcept;
+	void ConfineMouseCursor() noexcept;
+	void FreeMouseCursor() noexcept;
+};
 
-	hWnd = CreateWindowEx
-	(
-		extendedStyle,
-		extendedClassName.data(),
-		title.data(),
-		IO_WINDOW_STYLE,
-		IO_WINDOW_POSITION,
-		IO_WINDOW_POSITION,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		nullptr,
-		nullptr,
-		GetModuleHandle(nullptr),
-		pParam
-	);
-
-	if (hWnd == nullptr)
-		return false;
-
-	return true;
-}
-
-HWND IOWindowHandle::GetWindowHandle() const noexcept
-{
-	return this->hWnd;
-}
+#endif

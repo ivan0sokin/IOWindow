@@ -43,19 +43,16 @@ public:
 		std::string_view title,
 		unsigned long width,
 		unsigned long height,
-		HINSTANCE hInstance,
 		void *pParam
 	) noexcept;
-	void DestroyWindowHandle() noexcept;
+	bool DestroyWindowHandle() noexcept;
 
-	HWND GetWindowHandle() noexcept;
+	HWND GetWindowHandle() const noexcept;
 
 	IOWindowHandle& operator=(const IOWindowHandle &other) = delete;
 	IOWindowHandle& operator=(IOWindowHandle&& other) = delete;
 private:
 	HWND hWnd;
-
-	void DestroyAndSetWindowHandleNull() noexcept;
 
 	static constexpr DWORD IO_WINDOW_STYLE = WS_OVERLAPPEDWINDOW;
 	static constexpr DWORD IO_WINDOW_POSITION = CW_USEDEFAULT;

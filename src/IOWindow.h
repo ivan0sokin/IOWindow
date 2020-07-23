@@ -27,14 +27,17 @@
 
 #include "IOWindowExtendedClass.h"
 #include "IOWindowHandle.h"
+#include "IOCursor.h"
 #include "IOInput.h"
+
+#include "IOWindowCallbacks.hpp"
 
 #include <cassert>
 
 class IOWindow
 {
 public:
-	IOWindow() noexcept;
+	IOWindow() = default;
 	IOWindow(const IOWindow &other) = delete;
 	IOWindow(IOWindow &&other) = delete;
 	~IOWindow() noexcept;
@@ -43,11 +46,7 @@ public:
 	IOWindow& operator=(IOWindow &&other) = delete;
 
 	bool MakeWindow(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept;
-	void CloseWindow() noexcept;
-	
-	void EnableMouseCursor() noexcept;
-	void DisableMouseCursor() noexcept;
-	bool IsMouseCursorEnabled() const noexcept;
+	bool CloseWindow() noexcept;
 
 	bool ShouldBeClosed() const noexcept;
 	void PollWindowMessages() noexcept;
@@ -58,6 +57,14 @@ public:
 	void EnableRawMouseInput() noexcept;
 	void DisableRawMouseInput() noexcept;
 
+	void EnableMouseCursor() noexcept;
+	void DisableMouseCursor() noexcept;
+
+	void SetWindowScreenSizeCallback(IOWindowScreenSizeCallbackFunction windowScreenSizeCallbackFunction) noexcept;
+	void SetWindowScreenMoveCallback(IOWindowScreenMoveCallbackFunction windowScreenMoveCallbackFunction) noexcept;
+	void SetWindowSizeCallback(IOWindowSizeCallbackFunction windowSizeCallbackFunction) noexcept;
+	void SetWindowMoveCallback(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept;
+
 	void GetWindowTitle(char *pWindowTitle) noexcept;
 	void GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept;
 	void GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept;
@@ -65,23 +72,23 @@ public:
 	void SetWindowTitle(std::string_view windowTitle) noexcept;
 
 	HWND GetWindowHandle() const noexcept;
-	HINSTANCE GetWindowInstanceHandle() const noexcept;
 
 	std::string const& GetLastError() noexcept;
 private:
-	std::unique_ptr<IOWindowExtendedClass> extendedClass;
-	std::unique_ptr<IOWindowHandle> handle;
-	std::unique_ptr<IOInput> input;
+	IOWindowExtendedClass extendedClass;
+	IOWindowHandle handle;
+	IOCursor cursor;
+	IOInput input;
+
+	IOWindowScreenSizeCallbackFunction screenSizeCallback;
+	IOWindowScreenMoveCallbackFunction screenMoveCallback;
+	IOWindowSizeCallbackFunction windowSizeCallback;
+	IOWindowMoveCallbackFunction windowMoveCallback;
 
 	bool shouldBeClosed = false;
 	bool isMouseCursorEnabled = true;
 
 	std::string lastError;
-
-	void ShowMouseCursor() noexcept;
-	void HideMouseCursor() noexcept;
-	void ConfineMouseCursor() noexcept;
-	void FreeMouseCursor() noexcept;
 
 	static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK WndProcThunk(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;

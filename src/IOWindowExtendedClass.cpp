@@ -24,28 +24,17 @@
 
 #include "IOWindowExtendedClass.h"
 
-IOWindowExtendedClass::IOWindowExtendedClass() noexcept
-{
-	this->hInstance = GetModuleHandle(nullptr);
-}
-
 IOWindowExtendedClass::~IOWindowExtendedClass() noexcept
 {
 	this->DestroyWindowClassEx();
 }
 
-void IOWindowExtendedClass::DestroyWindowClassEx() noexcept
+bool IOWindowExtendedClass::DestroyWindowClassEx() noexcept
 {
-	this->UnregisterClassExAndSetInstanceHandleNull();
-}
+	if (!UnregisterClass(IO_WINDOW_CLASS_EX_NAME, GetModuleHandle(nullptr)))
+		return false;
 
-void IOWindowExtendedClass::UnregisterClassExAndSetInstanceHandleNull() noexcept
-{
-	if (hInstance != nullptr)
-	{
-		UnregisterClass(IO_WINDOW_CLASS_EX_NAME, hInstance);
-		hInstance = nullptr;
-	}
+	return true;
 }
 
 bool IOWindowExtendedClass::MakeWindowClassEx(WNDPROC WndProc) noexcept
@@ -58,7 +47,7 @@ bool IOWindowExtendedClass::MakeWindowClassEx(WNDPROC WndProc) noexcept
 	windowClassEx.lpfnWndProc = WndProc;
 	windowClassEx.cbClsExtra = 0;
 	windowClassEx.cbWndExtra = 0;
-	windowClassEx.hInstance = hInstance;
+	windowClassEx.hInstance = GetModuleHandle(nullptr);
 	windowClassEx.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	windowClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);
 	windowClassEx.hbrBackground = nullptr;
@@ -70,11 +59,6 @@ bool IOWindowExtendedClass::MakeWindowClassEx(WNDPROC WndProc) noexcept
 		return false;
 
 	return true;
-}
-
-HINSTANCE IOWindowExtendedClass::GetWindowInstanceHandle() const noexcept
-{
-	return this->hInstance;
 }
 
 char const* IOWindowExtendedClass::GetWindowClassExName() const noexcept

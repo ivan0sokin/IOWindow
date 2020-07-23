@@ -30,7 +30,7 @@
 class IOWindowExtendedClass
 {
 public:
-	IOWindowExtendedClass() noexcept;
+	IOWindowExtendedClass() = default;
 	IOWindowExtendedClass(const IOWindowExtendedClass &other) = delete;
 	IOWindowExtendedClass(IOWindowExtendedClass &&other) = delete;
 	~IOWindowExtendedClass() noexcept;
@@ -39,15 +39,10 @@ public:
 	IOWindowExtendedClass& operator=(IOWindowExtendedClass &&other) = delete;
 
 	bool MakeWindowClassEx(WNDPROC WndProc) noexcept;
-	void DestroyWindowClassEx() noexcept;
+	bool DestroyWindowClassEx() noexcept;
 
-	HINSTANCE GetWindowInstanceHandle() const noexcept;
 	char const* GetWindowClassExName() const noexcept;
 private:
-	HINSTANCE hInstance;
-
-	void UnregisterClassExAndSetInstanceHandleNull() noexcept;
-
 	static constexpr char const* IO_WINDOW_CLASS_EX_NAME = "IOWindowExtendedClass";
 };
 

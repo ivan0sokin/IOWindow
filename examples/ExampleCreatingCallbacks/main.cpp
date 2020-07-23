@@ -22,58 +22,40 @@
 	SOFTWARE.
 */
 
-#include "IOWindowHandle.h"
+#include <IOWindow/IOWindow.h>
 
-IOWindowHandle::IOWindowHandle() noexcept
+void screenSizeCallback(unsigned long width, unsigned long height)
 {
-	this->hWnd = nullptr;
+	SomeEngine.StopRender();
+	SomeEngine.OnFramebufferResize(width, height);
+	SomeEngine.BeginRender();
 }
 
-IOWindowHandle::~IOWindowHandle() noexcept
+void windowMoveCallback(long x, long y)
 {
-	this->DestroyWindowHandle();
+	printf("New window position = { x: %d y: %d }\n", x, y);
 }
 
-bool IOWindowHandle::DestroyWindowHandle() noexcept
+int main()
 {
-	if (!DestroyWindow(hWnd))
-		return false;
+	IOWindow window = IOWindow();
 
-	return true;
-}
-
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept
-{
-	RECT windowRect =
+	if (!window.MakeWindow("3rd example", 500ul, 500ul))
 	{
-		0, 0,
-		width, height
-	};
-	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
+		printf("%s\n", window.GetLastError().c_str());
+		exit(-1);
+	}
+	
+	window.SetWindowScreenSizeCallback(screenSizeCallback);
+	window.SetWindowMoveCallback(windowMoveCallback);
 
-	hWnd = CreateWindowEx
-	(
-		extendedStyle,
-		extendedClassName.data(),
-		title.data(),
-		IO_WINDOW_STYLE,
-		IO_WINDOW_POSITION,
-		IO_WINDOW_POSITION,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		nullptr,
-		nullptr,
-		GetModuleHandle(nullptr),
-		pParam
-	);
+	while (!window.ShouldBeClosed())
+	{
+		window.PollWindowMessages();
 
-	if (hWnd == nullptr)
-		return false;
+		SomeEngine.Render();
+	}
 
-	return true;
-}
-
-HWND IOWindowHandle::GetWindowHandle() const noexcept
-{
-	return this->hWnd;
+	window.CloseWindow();
+	return 0;
 }
