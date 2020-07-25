@@ -24,28 +24,50 @@
 
 #include <IOWindow/IOWindow.h>
 
+#pragma comment(lib, "opengl32.lib")
+#include <gl/GL.h>
+
 int main()
 {
 	IOWindow window = IOWindow();
 
-	if (!window.MakeWindow("1st example", 500ul, 500ul))
+	if (!window.MakeWindow("4th example", 500ul, 500ul))
+	{
+		printf("%s\n", window.GetLastError().c_str());
+		exit(-1);
+	}
+	
+	if (!window.CreateContext())
 	{
 		printf("%s\n", window.GetLastError().c_str());
 		exit(-1);
 	}
 
-	auto keyboard = std::make_shared<IOKeyboard>();
-
-	window.SetKeyboardInput(keyboard);
+	glClearColor(0.0f, 0.0f, 0.4f, 1.0f);
 
 	while (!window.ShouldBeClosed())
 	{
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		window.PollWindowMessages();
 
-		if (keyboard->IsKeyPressed(IO_KEY_ESCAPE))
-			window.ShouldClose();
+		glBegin(GL_TRIANGLES);
+		{
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex2f(-0.5f, -0.5f);
+
+			glColor3f(0.0f, 1.0f, 0.0f);
+			glVertex2f( 0.0f,  0.5f);
+
+			glColor3f(0.0f, 0.0f, 1.0f);
+			glVertex2f( 0.5f,  -0.5f);
+		}
+		glEnd();
+
+		window.SwapBuffers();
 	}
 
+	window.DestroyContext();
 	window.CloseWindow();
 	return 0;
 }

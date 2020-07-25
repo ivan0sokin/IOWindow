@@ -22,30 +22,33 @@
 	SOFTWARE.
 */
 
-#include <IOWindow/IOWindow.h>
+#ifndef _IO_WINDOW_OPENGL_CONTEXT_H
+#define _IO_WINDOW_OPENGL_CONTEXT_H
 
-int main()
+#pragma comment(lib, "opengl32.lib")
+
+#include <Windows.h>
+
+class IOWindowContext
 {
-	IOWindow window = IOWindow();
+public:
+	IOWindowContext() noexcept;
+	IOWindowContext(HWND hWnd) noexcept;
+	IOWindowContext(IOWindowContext const &other) noexcept;
+	IOWindowContext(IOWindowContext &&other) noexcept;
+	~IOWindowContext() noexcept;
 
-	if (!window.MakeWindow("1st example", 500ul, 500ul))
-	{
-		printf("%s\n", window.GetLastError().c_str());
-		exit(-1);
-	}
+	bool CreateOpenGLContext() noexcept;
+	bool DestroyOpenGLContext() noexcept;
 
-	auto keyboard = std::make_shared<IOKeyboard>();
+	void SwapBuffers() noexcept;
 
-	window.SetKeyboardInput(keyboard);
+	IOWindowContext& operator=(IOWindowContext const &other) noexcept;
+	IOWindowContext& operator=(IOWindowContext &&other) noexcept;
+private:
+	HWND hWnd;
 
-	while (!window.ShouldBeClosed())
-	{
-		window.PollWindowMessages();
+	bool SetPixelFormat() noexcept;
+};
 
-		if (keyboard->IsKeyPressed(IO_KEY_ESCAPE))
-			window.ShouldClose();
-	}
-
-	window.CloseWindow();
-	return 0;
-}
+#endif

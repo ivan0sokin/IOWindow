@@ -33,7 +33,7 @@ bool IOWindow::CloseWindow() noexcept
 {
 	cursor.EnableCursor();
 
-	if (!handle.DestroyWindowHandle() || !extendedClass.DestroyWindowClassEx())
+	if (!(handle.DestroyWindowHandle() && !extendedClass.DestroyWindowClassEx()))
 	{
 		lastError = "[IOWindow]: Failed to close window";
 		return false;
@@ -76,6 +76,11 @@ bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidt
 bool IOWindow::ShouldBeClosed() const noexcept
 {
 	return this->shouldBeClosed;
+}
+
+void IOWindow::ShouldClose() noexcept
+{
+	shouldBeClosed = true;
 }
 
 void IOWindow::PollWindowMessages() noexcept
@@ -155,6 +160,34 @@ void IOWindow::SetWindowSizeCallback(IOWindowSizeCallbackFunction windowSizeCall
 void IOWindow::SetWindowMoveCallback(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept
 {
 	windowMoveCallback = windowMoveCallbackFunction;
+}
+
+bool IOWindow::CreateContext() noexcept
+{
+	context = IOWindowContext(handle.GetWindowHandle());
+	if (!context.CreateOpenGLContext())
+	{
+		lastError = "[IOWindow]: Failed to create OpenGL context";
+		return false;
+	}
+
+	return true;
+}
+
+bool IOWindow::DestroyContext() noexcept
+{
+	if (!context.DestroyOpenGLContext())
+	{
+		lastError = "[IOWindow]: Failed to destroy OpenGL context";
+		return false;
+	}
+
+	return true;
+}
+
+void IOWindow::SwapBuffers() noexcept
+{
+	context.SwapBuffers();
 }
 
 LRESULT IOWindow::WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept

@@ -29,8 +29,8 @@
 #include "IOWindowHandle.h"
 #include "IOCursor.h"
 #include "IOInput.h"
-
 #include "IOWindowCallbacks.hpp"
+#include "IOWindowContext.h"
 
 #include <cassert>
 
@@ -49,6 +49,7 @@ public:
 	bool CloseWindow() noexcept;
 
 	bool ShouldBeClosed() const noexcept;
+	void ShouldClose() noexcept;
 	void PollWindowMessages() noexcept;
 
 	void SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept;
@@ -64,6 +65,10 @@ public:
 	void SetWindowScreenMoveCallback(IOWindowScreenMoveCallbackFunction windowScreenMoveCallbackFunction) noexcept;
 	void SetWindowSizeCallback(IOWindowSizeCallbackFunction windowSizeCallbackFunction) noexcept;
 	void SetWindowMoveCallback(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept;
+
+	bool CreateContext() noexcept;
+	bool DestroyContext() noexcept;
+	void SwapBuffers() noexcept;
 
 	void GetWindowTitle(char *pWindowTitle) noexcept;
 	void GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept;
@@ -84,6 +89,8 @@ private:
 	IOWindowScreenMoveCallbackFunction screenMoveCallback;
 	IOWindowSizeCallbackFunction windowSizeCallback;
 	IOWindowMoveCallbackFunction windowMoveCallback;
+
+	IOWindowContext context;
 
 	bool shouldBeClosed = false;
 	bool isMouseCursorEnabled = true;

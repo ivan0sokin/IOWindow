@@ -22,8 +22,8 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_CALLBACKS_HPP
-#define _IO_CALLBACKS_HPP
+#ifndef _IO_WINDOW_CALLBACKS_HPP
+#define _IO_WINDOW_CALLBACKS_HPP
 
 typedef void(*IOWindowScreenSizeCallbackFunction)(unsigned long windowScreenWidth, unsigned long windowScreenHeight);
 typedef void(*IOWindowScreenMoveCallbackFunction)(long windowScreenPosX, long windowScreenPosY);
