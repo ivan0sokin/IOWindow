@@ -26,23 +26,23 @@
 
 IOWindowContext::IOWindowContext() noexcept
 {
-	this->hWnd = nullptr;
+	this->windowHandle = nullptr;
 }
 
 IOWindowContext::IOWindowContext(HWND hWnd) noexcept
 {
-	this->hWnd = hWnd;
+	this->windowHandle = hWnd;
 }
 
 IOWindowContext::IOWindowContext(IOWindowContext const &other) noexcept
 {
-	this->hWnd = other.hWnd;
+	this->windowHandle = other.windowHandle;
 }
 
 IOWindowContext::IOWindowContext(IOWindowContext &&other) noexcept
 {
-	this->hWnd = other.hWnd;
-	other.hWnd = nullptr;
+	this->windowHandle = other.windowHandle;
+	other.windowHandle = nullptr;
 }
 
 IOWindowContext& IOWindowContext::operator=(IOWindowContext const &other) noexcept
@@ -50,7 +50,7 @@ IOWindowContext& IOWindowContext::operator=(IOWindowContext const &other) noexce
 	if (this == &other)
 		return *this;
 
-	this->hWnd = other.hWnd;
+	this->windowHandle = other.windowHandle;
 
 	return *this;
 }
@@ -60,47 +60,69 @@ IOWindowContext& IOWindowContext::operator=(IOWindowContext &&other) noexcept
 	if (this == &other)
 		return *this;
 
-	this->hWnd = other.hWnd;
-	other.hWnd = nullptr;
+	this->windowHandle = other.windowHandle;
+	other.windowHandle = nullptr;
 
 	return *this;
 }
 
 IOWindowContext::~IOWindowContext() noexcept
 {
-	this->DestroyOpenGLContext();
+	this->Destroy();
 }
 
-bool IOWindowContext::DestroyOpenGLContext() noexcept
+bool IOWindowContext::Destroy() noexcept
 {
-	wglMakeCurrent(nullptr, nullptr);
-	ReleaseDC(hWnd, GetDC(hWnd));
-
-	if (!wglDeleteContext(wglGetCurrentContext()))
+	if (renderingContextHandle == nullptr)
 		return false;
 
-	return true;
+	if (!this->Release())
+		return false;
+
+	if (ReleaseDC(windowHandle, GetDC(windowHandle)) != 1)
+		return false;
+
+	return wglDeleteContext(renderingContextHandle);
 }
 
-bool IOWindowContext::CreateOpenGLContext() noexcept
+bool IOWindowContext::Release() noexcept
+{
+	HDC deviceContextHandle = GetDC(windowHandle);
+	if (deviceContextHandle == nullptr)
+		return false;
+
+	return wglMakeCurrent(deviceContextHandle, nullptr);
+}
+
+bool IOWindowContext::Create() noexcept
 {
 	if (!this->SetPixelFormat())
 		return false;
 
-	HDC deviceContextHandle = GetDC(hWnd);
-	HGLRC renderingContextHandle = wglCreateContext(deviceContextHandle);
+	HDC deviceContextHandle = GetDC(windowHandle);
+
+	renderingContextHandle = wglCreateContext(deviceContextHandle);
 	if (renderingContextHandle == nullptr)
 		return false;
 
-	if (!wglMakeCurrent(deviceContextHandle, renderingContextHandle))
+	return wglMakeCurrent(deviceContextHandle, renderingContextHandle);
+}
+
+bool IOWindowContext::MakeCurrent() noexcept
+{
+	HDC deviceContextHandle = GetDC(windowHandle);
+	if (deviceContextHandle == nullptr)
 		return false;
 
-	return true;
+	if (renderingContextHandle == nullptr)
+		return false;
+
+	return wglMakeCurrent(deviceContextHandle, renderingContextHandle);
 }
 
 void IOWindowContext::SwapBuffers() noexcept
 {
-	::SwapBuffers(GetDC(hWnd));
+	::SwapBuffers(GetDC(windowHandle));
 }
 
 bool IOWindowContext::SetPixelFormat() noexcept
@@ -115,7 +137,10 @@ bool IOWindowContext::SetPixelFormat() noexcept
 	pixelFormatDescriptor.cDepthBits = 24;
 	pixelFormatDescriptor.cStencilBits = 8;
 
-	HDC deviceContextHandle = GetDC(hWnd);
+	HDC deviceContextHandle = GetDC(windowHandle);
+	if (deviceContextHandle == nullptr)
+		return false;
+
 	int pixelFormat = ChoosePixelFormat(deviceContextHandle, &pixelFormatDescriptor);
 	if (pixelFormat == 0)
 		return false;

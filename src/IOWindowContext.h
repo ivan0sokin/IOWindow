@@ -22,8 +22,8 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_WINDOW_OPENGL_CONTEXT_H
-#define _IO_WINDOW_OPENGL_CONTEXT_H
+#ifndef _IO_WINDOW_CONTEXT_H
+#define _IO_WINDOW_CONTEXT_H
 
 #pragma comment(lib, "opengl32.lib")
 
@@ -38,15 +38,19 @@ public:
 	IOWindowContext(IOWindowContext &&other) noexcept;
 	~IOWindowContext() noexcept;
 
-	bool CreateOpenGLContext() noexcept;
-	bool DestroyOpenGLContext() noexcept;
+	bool Create() noexcept;
+	bool Destroy() noexcept;
+
+	bool MakeCurrent() noexcept;
+	bool Release() noexcept;
 
 	void SwapBuffers() noexcept;
 
 	IOWindowContext& operator=(IOWindowContext const &other) noexcept;
 	IOWindowContext& operator=(IOWindowContext &&other) noexcept;
 private:
-	HWND hWnd;
+	HWND windowHandle;
+	HGLRC renderingContextHandle;
 
 	bool SetPixelFormat() noexcept;
 };

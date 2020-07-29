@@ -34,8 +34,9 @@ public:
 		Released
 	};
 
+	IOKeyboardEvent() = default;
 	IOKeyboardEvent(Type type, unsigned char key) noexcept;
-	IOKeyboardEvent(const IOKeyboardEvent &event) noexcept;
+	IOKeyboardEvent(IOKeyboardEvent const &other) noexcept;
 	~IOKeyboardEvent() = default;
 
 	bool IsPressed() const noexcept;

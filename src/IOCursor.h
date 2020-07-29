@@ -38,18 +38,18 @@ public:
 
 	IOCursor& operator=(IOCursor const &other) noexcept;
 
-	void EnableCursor() noexcept;
-	void DisableCursor() noexcept;
-	bool IsCursorEnabled() const noexcept;
+	void Enable() noexcept;
+	void Disable() noexcept;
+	bool IsEnabled() const noexcept;
 private:
-	bool isCursorEnabled = true;
+	bool isEnabled = true;
 
 	HWND windowHandle;
 
-	void ShowMouseCursor() noexcept;
-	void HideMouseCursor() noexcept;
-	void ConfineMouseCursor() noexcept;
-	void FreeMouseCursor() noexcept;
+	void Show() noexcept;
+	void Hide() noexcept;
+	void Confine() noexcept;
+	void Free() noexcept;
 };
 
 #endif

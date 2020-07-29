@@ -32,49 +32,49 @@ IOCursor::IOCursor(HWND windowHandle) noexcept
 IOCursor::IOCursor(IOCursor const &other)
 {
 	this->windowHandle = other.windowHandle;
-	this->isCursorEnabled = other.isCursorEnabled;
+	this->isEnabled = other.isEnabled;
 }
 
 IOCursor& IOCursor::operator=(IOCursor const & other) noexcept
 {
 	this->windowHandle = other.windowHandle;
-	this->isCursorEnabled = other.isCursorEnabled;
+	this->isEnabled = other.isEnabled;
 
 	return *this;
 }
 
-void IOCursor::EnableCursor() noexcept
+void IOCursor::Enable() noexcept
 {
-	isCursorEnabled = true;
+	isEnabled = true;
 
-	this->ShowMouseCursor();
-	this->FreeMouseCursor();
+	this->Show();
+	this->Free();
 }
 
-void IOCursor::DisableCursor() noexcept
+void IOCursor::Disable() noexcept
 {
-	isCursorEnabled = false;
+	isEnabled = false;
 
-	this->HideMouseCursor();
-	this->ConfineMouseCursor();
+	this->Hide();
+	this->Confine();
 }
 
-bool IOCursor::IsCursorEnabled() const noexcept
+bool IOCursor::IsEnabled() const noexcept
 {
-	return this->isCursorEnabled;
+	return this->isEnabled;
 }
 
-void IOCursor::ShowMouseCursor() noexcept
+void IOCursor::Show() noexcept
 {
 	while (ShowCursor(TRUE) < 0);
 }
 
-void IOCursor::HideMouseCursor() noexcept
+void IOCursor::Hide() noexcept
 {
 	while (ShowCursor(FALSE) >= 0);
 }
 
-void IOCursor::ConfineMouseCursor() noexcept
+void IOCursor::Confine() noexcept
 {
 	RECT screenRect;
 	GetClientRect(windowHandle, &screenRect);
@@ -82,7 +82,7 @@ void IOCursor::ConfineMouseCursor() noexcept
 	ClipCursor(&screenRect);
 }
 
-void IOCursor::FreeMouseCursor() noexcept
+void IOCursor::Free() noexcept
 {
 	ClipCursor(nullptr);
 }

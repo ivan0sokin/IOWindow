@@ -31,10 +31,10 @@ IOWindowHandle::IOWindowHandle() noexcept
 
 IOWindowHandle::~IOWindowHandle() noexcept
 {
-	this->DestroyWindowHandle();
+	this->Destroy();
 }
 
-bool IOWindowHandle::DestroyWindowHandle() noexcept
+bool IOWindowHandle::Destroy() noexcept
 {
 	if (!DestroyWindow(hWnd))
 		return false;
@@ -42,15 +42,15 @@ bool IOWindowHandle::DestroyWindowHandle() noexcept
 	return true;
 }
 
-bool IOWindowHandle::MakeWindowHandle(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept
+bool IOWindowHandle::Create(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept
 {
 	RECT windowRect =
 	{
 		0, 0,
-		width, height
+		static_cast<long>(width), static_cast<long>(height)
 	};
 	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
-
+	
 	hWnd = CreateWindowEx
 	(
 		extendedStyle,

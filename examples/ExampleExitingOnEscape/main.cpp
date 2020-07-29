@@ -28,7 +28,7 @@ int main()
 {
 	IOWindow window = IOWindow();
 
-	if (!window.MakeWindow("1st example", 500ul, 500ul))
+	if (!window.Create("1st example", 500ul, 500ul))
 	{
 		printf("%s\n", window.GetLastError().c_str());
 		exit(-1);
@@ -38,14 +38,16 @@ int main()
 
 	window.SetKeyboardInput(keyboard);
 
-	while (!window.ShouldBeClosed())
+	while (true)
 	{
-		window.PollWindowMessages();
+		window.PollMessages();
 
 		if (keyboard->IsKeyPressed(IO_KEY_ESCAPE))
-			window.ShouldClose();
+		{
+			window.Close();
+			exit(0);
+		}
 	}
 
-	window.CloseWindow();
 	return 0;
 }

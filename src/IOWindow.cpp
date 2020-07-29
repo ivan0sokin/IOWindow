@@ -24,73 +24,76 @@
 
 #include "IOWindow.h"
 
-IOWindow::~IOWindow() noexcept
+IOWindow::IOWindow() noexcept
 {
-	this->CloseWindow();
+	this->extendedClass = std::make_unique<IOWindowExtendedClass>();
+	this->handle = std::make_unique<IOWindowHandle>();
+	this->input = std::make_unique<IOWindowInput>();
 }
 
-bool IOWindow::CloseWindow() noexcept
+IOWindow::~IOWindow() noexcept
 {
-	cursor.EnableCursor();
+	this->Close();
+}
 
-	if (!(handle.DestroyWindowHandle() && !extendedClass.DestroyWindowClassEx()))
+bool IOWindow::Close() noexcept
+{
+	if (windowCloseCallback)
+		windowCloseCallback();
+	
+	if (!handle->Destroy())
 	{
-		lastError = "[IOWindow]: Failed to close window";
+		lastError = "[IOWindow]: Failed to destroy IOWindowHandle";
+		return false;
+	}
+	if (!extendedClass->Destroy())
+	{
+		lastError = "[IOWindow]: Failed to destroy IOWindowExtendedClass";
 		return false;
 	}
 
 	return true;
 }
 
-bool IOWindow::MakeWindow(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept
+bool IOWindow::Create(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept
 {
 	assert(windowTitle.data() != nullptr);
 
-	if (!extendedClass.MakeWindowClassEx(IOWindow::WndProcSetup))
+	if (!extendedClass->Create(IOWindow::WndProcSetup))
 	{
-		lastError = "[IOWindow]: Failed to make IOWindowClassEx";
+		lastError = "[IOWindow]: Failed to create IOWindowClassEx";
 		return false;
 	}
 	
-	if (!handle.MakeWindowHandle
+	if (!handle->Create
 	(
 		0,
-		extendedClass.GetWindowClassExName(),
+		extendedClass->GetWindowClassExName(),
 		windowTitle,
 		screenWidth,
 		screenHeight,
 		this
 	))
 	{
-		lastError = "[IOWindow]: Failed to make IOWindowHandle";
+		lastError = "[IOWindow]: Failed to create IOWindowHandle";
 		return false;
 	}
 
-	cursor = IOCursor(handle.GetWindowHandle());
+	cursor = std::make_unique<IOCursor>(handle->GetWindowHandle());
 
-	ShowWindow(handle.GetWindowHandle(), SW_SHOWDEFAULT);
+	ShowWindow(handle->GetWindowHandle(), SW_SHOWDEFAULT);
 
 	return true;
 }
 
-bool IOWindow::ShouldBeClosed() const noexcept
-{
-	return this->shouldBeClosed;
-}
-
-void IOWindow::ShouldClose() noexcept
-{
-	shouldBeClosed = true;
-}
-
-void IOWindow::PollWindowMessages() noexcept
+void IOWindow::PollMessages() noexcept
 {
 	MSG msg;
 	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 	{
 		if (msg.message == WM_QUIT)
 		{
-			shouldBeClosed = true;
+			this->Close();
 			break;
 		}
 		TranslateMessage(&msg);
@@ -100,12 +103,12 @@ void IOWindow::PollWindowMessages() noexcept
 
 void IOWindow::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept
 {
-	input.SetKeyboardInput(keyboardInput);
+	input->SetKeyboardInput(keyboardInput);
 }
 
 void IOWindow::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
 {
-	input.SetMouseInput(mouseInput);
+	input->SetMouseInput(mouseInput);
 }
 
 void IOWindow::EnableRawMouseInput() noexcept
@@ -114,7 +117,7 @@ void IOWindow::EnableRawMouseInput() noexcept
 	rawMouseInput.usUsagePage = 0x01;
 	rawMouseInput.usUsage = 0x02;
 	rawMouseInput.dwFlags = 0;
-	rawMouseInput.hwndTarget = handle.GetWindowHandle();
+	rawMouseInput.hwndTarget = handle->GetWindowHandle();
 
 	if (!RegisterRawInputDevices(&rawMouseInput, 1, sizeof(RAWINPUTDEVICE)))
 		lastError = "[IOWindow]: Failed to enable raw mouse input";
@@ -134,38 +137,43 @@ void IOWindow::DisableRawMouseInput() noexcept
 
 void IOWindow::EnableMouseCursor() noexcept
 {
-	cursor.EnableCursor();
+	cursor->Enable();
 }
 
 void IOWindow::DisableMouseCursor() noexcept
 {
-	cursor.DisableCursor();
+	cursor->Disable();
 }
 
-void IOWindow::SetWindowScreenSizeCallback(IOWindowScreenSizeCallbackFunction windowScreenSizeCallbackFunction) noexcept
+void IOWindow::OnScreenSize(IOScreenSizeCallbackFunction windowScreenSizeCallbackFunction) noexcept
 {
 	screenSizeCallback = windowScreenSizeCallbackFunction;
 }
 
-void IOWindow::SetWindowScreenMoveCallback(IOWindowScreenMoveCallbackFunction windowScreenMoveCallbackFunction) noexcept
+void IOWindow::OnScreenMove(IOScreenMoveCallbackFunction windowScreenMoveCallbackFunction) noexcept
 {
 	screenMoveCallback = windowScreenMoveCallbackFunction;
 }
 
-void IOWindow::SetWindowSizeCallback(IOWindowSizeCallbackFunction windowSizeCallbackFunction) noexcept
+void IOWindow::OnWindowSize(IOWindowSizeCallbackFunction windowSizeCallbackFunction) noexcept
 {
 	windowSizeCallback = windowSizeCallbackFunction;
 }
 
-void IOWindow::SetWindowMoveCallback(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept
+void IOWindow::OnWindowMove(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept
 {
 	windowMoveCallback = windowMoveCallbackFunction;
 }
 
+void IOWindow::OnWindowClose(IOWindowCloseCallbackFunction windowCloseCallbackFunction) noexcept
+{
+	windowCloseCallback = windowCloseCallbackFunction;
+}
+
 bool IOWindow::CreateContext() noexcept
 {
-	context = IOWindowContext(handle.GetWindowHandle());
-	if (!context.CreateOpenGLContext())
+	context = std::make_unique<IOWindowContext>(handle->GetWindowHandle());
+	if (!context->Create())
 	{
 		lastError = "[IOWindow]: Failed to create OpenGL context";
 		return false;
@@ -176,7 +184,7 @@ bool IOWindow::CreateContext() noexcept
 
 bool IOWindow::DestroyContext() noexcept
 {
-	if (!context.DestroyOpenGLContext())
+	if (!context->Destroy())
 	{
 		lastError = "[IOWindow]: Failed to destroy OpenGL context";
 		return false;
@@ -187,7 +195,17 @@ bool IOWindow::DestroyContext() noexcept
 
 void IOWindow::SwapBuffers() noexcept
 {
-	context.SwapBuffers();
+	context->SwapBuffers();
+}
+
+bool IOWindow::MakeContextCurrent() noexcept
+{
+	return context->MakeCurrent();
+}
+
+bool IOWindow::ReleaseContext() noexcept
+{
+	return context->Release();
 }
 
 LRESULT IOWindow::WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -224,26 +242,26 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_KILLFOCUS:
 		{
-			if (!input.HasKeyboard())
+			if (!input->HasKeyboard())
 				break;
 
-			input.GetKeyboard()->ClearKeyStates();
+			input->GetKeyboard()->ClearKeyStates();
 
 			break;
 		}
 		case WM_ACTIVATE:
 		{
-			if (!cursor.IsCursorEnabled())
+			if (!cursor->IsEnabled())
 			{
 				if (wParam & WA_ACTIVE)
 				{
-					cursor.ConfineMouseCursor();
-					cursor.HideMouseCursor();
+					cursor->Confine();
+					cursor->Hide();
 				}
 				else
 				{
-					cursor.FreeMouseCursor();
-					cursor.ShowMouseCursor();
+					cursor->Free();
+					cursor->Show();
 				}
 			}
 
@@ -251,7 +269,7 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_SIZE:
 		{
-			if (screenSizeCallback == nullptr)
+			if (!screenSizeCallback)
 				break;
 
 			short width = LOWORD(lParam);
@@ -263,7 +281,7 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_MOVE:
 		{
-			if (screenMoveCallback == nullptr)
+			if (!screenMoveCallback)
 				break;
 
 			short x = LOWORD(lParam);
@@ -275,7 +293,7 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_SIZING:
 		{
-			if (windowSizeCallback == nullptr)
+			if (!windowSizeCallback)
 				break;
 
 			const RECT *windowRect = (RECT const*)lParam;
@@ -285,7 +303,7 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_MOVING:
 		{
-			if (windowMoveCallback == nullptr)
+			if (!windowMoveCallback)
 				break;
 
 			const RECT *windowRect = (RECT const*)lParam;
@@ -295,15 +313,15 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_KEYDOWN:
 		{
-			if (!input.HasKeyboard())
+			if (!input->HasKeyboard())
 				break;
 			
 			case WM_SYSKEYDOWN:
 			{
-				if (!(lParam & 0x40000000) || input.GetKeyboard()->IsAutorepeatEnabled())
+				if (!(lParam & 0x40000000) || input->GetKeyboard()->IsAutorepeatEnabled())
 				{
 					wParam = IOWindow::MapLeftRightKeys(wParam, lParam);
-					input.GetKeyboard()->OnKeyPressed(static_cast<unsigned char>(wParam));
+					input->GetKeyboard()->OnKeyPressed(static_cast<unsigned char>(wParam));
 				}
 			}
 
@@ -311,53 +329,53 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_KEYUP:
 		{
-			if (!input.HasKeyboard())
+			if (!input->HasKeyboard())
 				break;
 
 			case WM_SYSKEYUP:
 			{
 				wParam = IOWindow::MapLeftRightKeys(wParam, lParam);
-				input.GetKeyboard()->OnKeyReleased(static_cast<unsigned char>(wParam));
+				input->GetKeyboard()->OnKeyReleased(static_cast<unsigned char>(wParam));
 			}
 
 			break;
 		}
 		case WM_MOUSEMOVE:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 
-			if (!cursor.IsCursorEnabled())
+			if (!cursor->IsEnabled())
 			{
-				if (input.GetMouse()->IsInWindow())
+				if (input->GetMouse()->IsInWindow())
 				{
 					SetCapture(hWnd);
-					input.GetMouse()->OnMouseEnter();
+					input->GetMouse()->OnMouseEnter();
 
-					cursor.HideMouseCursor();
+					cursor->Hide();
 				}
 			}
 
 			const POINTS mouseCursorPosition = MAKEPOINTS(lParam);
 			if (this->IsCursorInScreenBounds(mouseCursorPosition.x, mouseCursorPosition.y))
 			{
-				input.GetMouse()->OnMouseMove(mouseCursorPosition.x, mouseCursorPosition.y);
-				if (!input.GetMouse()->IsInWindow())
+				input->GetMouse()->OnMouseMove(mouseCursorPosition.x, mouseCursorPosition.y);
+				if (!input->GetMouse()->IsInWindow())
 				{
 					SetCapture(hWnd);
-					input.GetMouse()->OnMouseEnter();
+					input->GetMouse()->OnMouseEnter();
 				}
 			}
 			else
 			{
 				if (wParam & (MK_LBUTTON | MK_RBUTTON))
 				{
-					input.GetMouse()->OnMouseMove(mouseCursorPosition.x, mouseCursorPosition.y);
+					input->GetMouse()->OnMouseMove(mouseCursorPosition.x, mouseCursorPosition.y);
 				}
 				else
 				{
 					ReleaseCapture();
-					input.GetMouse()->OnMouseLeave();
+					input->GetMouse()->OnMouseLeave();
 				}
 			}
 
@@ -365,75 +383,75 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 		}
 		case WM_LBUTTONDOWN:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 
 			SetForegroundWindow(hWnd);
 
-			if (!cursor.IsCursorEnabled())
+			if (!cursor->IsEnabled())
 			{
-				cursor.ConfineMouseCursor();
-				cursor.HideMouseCursor();
+				cursor->Confine();
+				cursor->Hide();
 			}
 
-			input.GetMouse()->OnLeftPressed();
+			input->GetMouse()->OnLeftPressed();
 
 			break;
 		}
 		case WM_LBUTTONUP:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 
-			input.GetMouse()->OnLeftReleased();
+			input->GetMouse()->OnLeftReleased();
 
 			const POINTS mosueCursorPosition = MAKEPOINTS(lParam);
 			if (!this->IsCursorInScreenBounds(mosueCursorPosition.x, mosueCursorPosition.y))
 			{
 				ReleaseCapture();
-				input.GetMouse()->OnMouseLeave();
+				input->GetMouse()->OnMouseLeave();
 			}
 
 			break;
 		}
 		case WM_RBUTTONDOWN:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 
-			input.GetMouse()->OnRightPressed();
+			input->GetMouse()->OnRightPressed();
 
 			break;
 		}
 		case WM_RBUTTONUP:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 
-			input.GetMouse()->OnRightReleased();
+			input->GetMouse()->OnRightReleased();
 
 			POINTS mouseCursorPosition = MAKEPOINTS(lParam);
 			if (!this->IsCursorInScreenBounds(mouseCursorPosition.x, mouseCursorPosition.y))
 			{
 				ReleaseCapture();
-				input.GetMouse()->OnMouseLeave();
+				input->GetMouse()->OnMouseLeave();
 			}
 
 			break;
 		}
 		case WM_MOUSEWHEEL:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 
 			short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-			input.GetMouse()->OnWheelDelta(wheelDelta);
+			input->GetMouse()->OnWheelDelta(wheelDelta);
 
 			break;
 		}
 		case WM_INPUT:
 		{
-			if (!input.HasMouse())
+			if (!input->HasMouse())
 				break;
 			
 			unsigned int size = 0;
@@ -463,7 +481,7 @@ LRESULT IOWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) no
 
 			if (rawInput.header.dwType == RIM_TYPEMOUSE && (rawInput.data.mouse.lLastX != 0 || rawInput.data.mouse.lLastY != 0))
 			{
-				input.GetMouse()->OnRawMouseMove(rawInput.data.mouse.lLastX, rawInput.data.mouse.lLastY);
+				input->GetMouse()->OnRawMouseMove(rawInput.data.mouse.lLastX, rawInput.data.mouse.lLastY);
 			}
 
 			delete rawData;
@@ -505,7 +523,7 @@ WPARAM IOWindow::MapLeftRightKeys(WPARAM wParam, LPARAM lParam) noexcept
 bool IOWindow::IsCursorInScreenBounds(unsigned long cursorPosX, unsigned long cursorPosY) noexcept
 {
 	unsigned long screenWidth, screenHeight;
-	this->GetWindowScreenResolution(&screenWidth, &screenHeight);
+	this->GetScreenResolution(&screenWidth, &screenHeight);
 
 	return
 	(
@@ -516,20 +534,20 @@ bool IOWindow::IsCursorInScreenBounds(unsigned long cursorPosX, unsigned long cu
 	);
 }
 
-void IOWindow::GetWindowTitle(char *pWindowTitle) noexcept
+void IOWindow::GetTitle(char *pWindowTitle) noexcept
 {
 	if (pWindowTitle != nullptr)
 	{
-		size_t titleLength = static_cast<size_t>(GetWindowTextLength(handle.GetWindowHandle()));
-		if (GetWindowText(handle.GetWindowHandle(), pWindowTitle, static_cast<int>(titleLength) + 1) == 0)
+		size_t titleLength = static_cast<size_t>(GetWindowTextLength(handle->GetWindowHandle()));
+		if (GetWindowText(handle->GetWindowHandle(), pWindowTitle, static_cast<int>(titleLength) + 1) == 0)
 			lastError = "[IOWindow]: Failed to get window title";
 	}
 }
 
-void IOWindow::GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept
+void IOWindow::GetScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept
 {
 	RECT screenRect;
-	if (!GetClientRect(handle.GetWindowHandle(), &screenRect))
+	if (!GetClientRect(handle->GetWindowHandle(), &screenRect))
 	{
 		lastError = "[IOWindow]: Failed to get screen resolution";
 		return;
@@ -541,10 +559,10 @@ void IOWindow::GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsi
 		*pWindowScreenHeight = screenRect.bottom;
 }
 
-void IOWindow::GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept
+void IOWindow::GetPosition(long *pWindowPosX, long *pWindowPosY) noexcept
 {
 	RECT windowRect;
-	if (!GetWindowRect(handle.GetWindowHandle(), &windowRect))
+	if (!GetWindowRect(handle->GetWindowHandle(), &windowRect))
 	{
 		lastError = "[IOWindow]: Failed to get window position";
 		return;
@@ -556,18 +574,18 @@ void IOWindow::GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept
 		*pWindowPosY = windowRect.top;
 }
 
-void IOWindow::SetWindowTitle(std::string_view windowTitle) noexcept
+void IOWindow::SetTitle(std::string_view windowTitle) noexcept
 {
 	if (windowTitle.data() != nullptr)
 	{
-		if (!SetWindowText(handle.GetWindowHandle(), windowTitle.data()))
+		if (!SetWindowText(handle->GetWindowHandle(), windowTitle.data()))
 			lastError = "[IOWindow]: Failed to change window title";
 	}
 }
 
 HWND IOWindow::GetWindowHandle() const noexcept
 {
-	return handle.GetWindowHandle();
+	return handle->GetWindowHandle();
 }
 
 std::string const& IOWindow::GetLastError() noexcept

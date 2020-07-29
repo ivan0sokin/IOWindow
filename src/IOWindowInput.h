@@ -30,12 +30,12 @@
 
 #include <memory>
 
-class IOInput
+class IOWindowInput
 {
 public:
-	IOInput() = default;
-	IOInput(IOInput const &other) = delete;
-	~IOInput() = default;
+	IOWindowInput() = default;
+	IOWindowInput(IOWindowInput const &other) = delete;
+	~IOWindowInput() = default;
 
 	void SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept;
 	void SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept;

@@ -26,10 +26,10 @@
 
 IOWindowExtendedClass::~IOWindowExtendedClass() noexcept
 {
-	this->DestroyWindowClassEx();
+	this->Destroy();
 }
 
-bool IOWindowExtendedClass::DestroyWindowClassEx() noexcept
+bool IOWindowExtendedClass::Destroy() noexcept
 {
 	if (!UnregisterClass(IO_WINDOW_CLASS_EX_NAME, GetModuleHandle(nullptr)))
 		return false;
@@ -37,7 +37,7 @@ bool IOWindowExtendedClass::DestroyWindowClassEx() noexcept
 	return true;
 }
 
-bool IOWindowExtendedClass::MakeWindowClassEx(WNDPROC WndProc) noexcept
+bool IOWindowExtendedClass::Create(WNDPROC WndProc) noexcept
 {
 	WNDCLASSEX windowClassEx;
 	ZeroMemory(&windowClassEx, sizeof(WNDCLASSEX));

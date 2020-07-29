@@ -30,7 +30,7 @@ IOKeyboardEvent::IOKeyboardEvent(Type type, unsigned char key) noexcept
 	this->key = key;
 }
 
-IOKeyboardEvent::IOKeyboardEvent(const IOKeyboardEvent &event) noexcept
+IOKeyboardEvent::IOKeyboardEvent(IOKeyboardEvent const &event) noexcept
 {
 	this->type = event.type;
 	this->key = event.key;

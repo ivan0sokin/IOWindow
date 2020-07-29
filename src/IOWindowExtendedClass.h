@@ -38,8 +38,8 @@ public:
 	IOWindowExtendedClass& operator=(const IOWindowExtendedClass &other) = delete;
 	IOWindowExtendedClass& operator=(IOWindowExtendedClass &&other) = delete;
 
-	bool MakeWindowClassEx(WNDPROC WndProc) noexcept;
-	bool DestroyWindowClassEx() noexcept;
+	bool Create(WNDPROC WndProc) noexcept;
+	bool Destroy() noexcept;
 
 	char const* GetWindowClassExName() const noexcept;
 private:

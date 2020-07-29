@@ -31,7 +31,7 @@ int main()
 {
 	IOWindow window = IOWindow();
 
-	if (!window.MakeWindow("4th example", 500ul, 500ul))
+	if (!window.Create("4th example", 500ul, 500ul))
 	{
 		printf("%s\n", window.GetLastError().c_str());
 		exit(-1);
@@ -42,14 +42,25 @@ int main()
 		printf("%s\n", window.GetLastError().c_str());
 		exit(-1);
 	}
+	
+	window.OnScreenSize([](unsigned long width, unsigned long height)
+	{
+		glViewport(0, 0, width, height);
+	});
+	window.OnWindowClose([&window]()
+	{
+		window.DestroyContext();
+		window.Close();
+		exit(0);
+	});
 
 	glClearColor(0.0f, 0.0f, 0.4f, 1.0f);
 
-	while (!window.ShouldBeClosed())
+	while (true)
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		window.PollWindowMessages();
+		window.PollMessages();
 
 		glBegin(GL_TRIANGLES);
 		{
@@ -67,7 +78,5 @@ int main()
 		window.SwapBuffers();
 	}
 
-	window.DestroyContext();
-	window.CloseWindow();
 	return 0;
 }

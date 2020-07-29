@@ -36,7 +36,7 @@ public:
 	IOWindowHandle(IOWindowHandle &&other) = delete;
 	~IOWindowHandle() noexcept;
 
-	bool MakeWindowHandle
+	bool Create
 	(
 		DWORD extendedStyle,
 		std::string_view extendedClassName,
@@ -45,7 +45,7 @@ public:
 		unsigned long height,
 		void *pParam
 	) noexcept;
-	bool DestroyWindowHandle() noexcept;
+	bool Destroy() noexcept;
 
 	HWND GetWindowHandle() const noexcept;
 

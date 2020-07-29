@@ -42,7 +42,9 @@ public:
 		Leave
 	};
 
+	IOMouseEvent() = default;
 	IOMouseEvent(Type type, long x, long y, bool isLeftPressed, bool isRightPressed) noexcept;
+	IOMouseEvent(IOMouseEvent const &other) noexcept;
 	~IOMouseEvent() = default;
 
 	Type GetType() const noexcept;

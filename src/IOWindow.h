@@ -27,8 +27,8 @@
 
 #include "IOWindowExtendedClass.h"
 #include "IOWindowHandle.h"
+#include "IOWindowInput.h"
 #include "IOCursor.h"
-#include "IOInput.h"
 #include "IOWindowCallbacks.hpp"
 #include "IOWindowContext.h"
 
@@ -37,7 +37,7 @@
 class IOWindow
 {
 public:
-	IOWindow() = default;
+	IOWindow() noexcept;
 	IOWindow(const IOWindow &other) = delete;
 	IOWindow(IOWindow &&other) = delete;
 	~IOWindow() noexcept;
@@ -45,12 +45,10 @@ public:
 	IOWindow& operator=(const IOWindow &other) = delete;
 	IOWindow& operator=(IOWindow &&other) = delete;
 
-	bool MakeWindow(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept;
-	bool CloseWindow() noexcept;
+	bool Create(std::string_view windowTitle, unsigned long screenWidth, unsigned long screenHeight) noexcept;
+	bool Close() noexcept;
 
-	bool ShouldBeClosed() const noexcept;
-	void ShouldClose() noexcept;
-	void PollWindowMessages() noexcept;
+	void PollMessages() noexcept;
 
 	void SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept;
 	void SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept;
@@ -61,39 +59,40 @@ public:
 	void EnableMouseCursor() noexcept;
 	void DisableMouseCursor() noexcept;
 
-	void SetWindowScreenSizeCallback(IOWindowScreenSizeCallbackFunction windowScreenSizeCallbackFunction) noexcept;
-	void SetWindowScreenMoveCallback(IOWindowScreenMoveCallbackFunction windowScreenMoveCallbackFunction) noexcept;
-	void SetWindowSizeCallback(IOWindowSizeCallbackFunction windowSizeCallbackFunction) noexcept;
-	void SetWindowMoveCallback(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept;
+	void OnScreenSize(IOScreenSizeCallbackFunction windowScreenSizeCallbackFunction) noexcept;
+	void OnScreenMove(IOScreenMoveCallbackFunction windowScreenMoveCallbackFunction) noexcept;
+	void OnWindowSize(IOWindowSizeCallbackFunction windowSizeCallbackFunction) noexcept;
+	void OnWindowMove(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept;
+	void OnWindowClose(IOWindowCloseCallbackFunction windowCloseCallbackFunction) noexcept;
 
 	bool CreateContext() noexcept;
 	bool DestroyContext() noexcept;
 	void SwapBuffers() noexcept;
 
-	void GetWindowTitle(char *pWindowTitle) noexcept;
-	void GetWindowScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept;
-	void GetWindowPosition(long *pWindowPosX, long *pWindowPosY) noexcept;
+	bool MakeContextCurrent() noexcept;
+	bool ReleaseContext() noexcept;
 
-	void SetWindowTitle(std::string_view windowTitle) noexcept;
+	void GetTitle(char *pWindowTitle) noexcept;
+	void GetScreenResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept;
+	void GetPosition(long *pWindowPosX, long *pWindowPosY) noexcept;
+
+	void SetTitle(std::string_view windowTitle) noexcept;
 
 	HWND GetWindowHandle() const noexcept;
 
 	std::string const& GetLastError() noexcept;
 private:
-	IOWindowExtendedClass extendedClass;
-	IOWindowHandle handle;
-	IOCursor cursor;
-	IOInput input;
+	std::unique_ptr<IOWindowExtendedClass> extendedClass;
+	std::unique_ptr<IOWindowHandle> handle;
+	std::unique_ptr<IOWindowInput> input;
+	std::unique_ptr<IOCursor> cursor;
+	std::unique_ptr<IOWindowContext> context;
 
-	IOWindowScreenSizeCallbackFunction screenSizeCallback;
-	IOWindowScreenMoveCallbackFunction screenMoveCallback;
+	IOScreenSizeCallbackFunction screenSizeCallback;
+	IOScreenMoveCallbackFunction screenMoveCallback;
 	IOWindowSizeCallbackFunction windowSizeCallback;
 	IOWindowMoveCallbackFunction windowMoveCallback;
-
-	IOWindowContext context;
-
-	bool shouldBeClosed = false;
-	bool isMouseCursorEnabled = true;
+	IOWindowCloseCallbackFunction windowCloseCallback;
 
 	std::string lastError;
 

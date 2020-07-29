@@ -33,6 +33,15 @@ IOMouseEvent::IOMouseEvent(Type type, long x, long y, bool isLeftPressed, bool i
 	this->isRightPressed = isRightPressed;
 }
 
+IOMouseEvent::IOMouseEvent(IOMouseEvent const &other) noexcept
+{
+	this->type = other.type;
+	this->x = other.x;
+	this->y = other.y;
+	this->isLeftPressed = other.isLeftPressed;
+	this->isRightPressed = other.isRightPressed;
+}
+
 IOMouseEvent::Type IOMouseEvent::GetType() const noexcept
 {
 	return this->type;

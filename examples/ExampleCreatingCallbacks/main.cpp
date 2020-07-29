@@ -24,30 +24,35 @@
 
 #include <IOWindow/IOWindow.h>
 
-void screenSizeCallback(unsigned long width, unsigned long height)
-{
-	SomeEngine.StopRender();
-	SomeEngine.OnFramebufferResize(width, height);
-	SomeEngine.BeginRender();
-}
-
-void windowMoveCallback(long x, long y)
-{
-	printf("New window position = { x: %d y: %d }\n", x, y);
-}
-
 int main()
 {
 	IOWindow window = IOWindow();
 
-	if (!window.MakeWindow("3rd example", 500ul, 500ul))
+	if (!window.Create("3rd example", 500ul, 500ul))
 	{
 		printf("%s\n", window.GetLastError().c_str());
 		exit(-1);
 	}
 	
-	window.SetWindowScreenSizeCallback(screenSizeCallback);
-	window.SetWindowMoveCallback(windowMoveCallback);
+	window.OnScreenSize([&SomeEngine](unsigned long width, unsigned long height)
+	{
+		SomeEngine.StopRender();
+		SomeEngine.OnFramebufferResize(width, height);
+		SomeEngine.BeginRender();
+	});
+	window.OnWindowMove([](long x, long y)
+	{
+		printf("Window moved to x: %d y :%d\n", x, y);
+	});
+	window.OnWindowClose([&window, &SomeEngine]()
+	{
+		SomeEngine.StopRender();
+		SomeEngine.Destroy();
+
+		window.Close();
+
+		exit(0);
+	});	
 
 	while (!window.ShouldBeClosed())
 	{
@@ -56,6 +61,5 @@ int main()
 		SomeEngine.Render();
 	}
 
-	window.CloseWindow();
 	return 0;
 }

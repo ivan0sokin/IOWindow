@@ -28,7 +28,7 @@ int main()
 {
 	IOWindow window = IOWindow();
 
-	if (!window.MakeWindow("2nd example", 500ul, 500ul))
+	if (!window.Create("2nd example", 500ul, 500ul))
 	{
 		printf("%s\n", window.GetLastError().c_str());
 		exit(-1);
@@ -38,11 +38,17 @@ int main()
 	window.SetMouseInput(mouse);
 	window.EnableRawMouseInput();
 
-	while (!window.ShouldBeClosed())
+	window.OnWindowClose([]()
 	{
-		window.PollWindowMessages();
+		window.Close();
+		exit(0);
+	});
 
-		while (auto rawMouseMove = mouse->ReadMouseRaw())
+	while (true)
+	{
+		window.PollMessages();
+
+		while (auto rawMouseMove = mouse->ReadRaw())
 		{
 			SomeCameraClass.OnMouseMove(rawMouseMove.value().dx, rawMouseMove.value().dy);
 		}
@@ -51,7 +57,7 @@ int main()
 
 		while (!mouse->IsRawBufferEmpty())
 		{
-			IOMouseRaw rawMouseMove = IOMouseRaw(mouse->ReadMouseRaw().value());
+			IOMouseRaw rawMouseMove = IOMouseRaw(mouse->ReadRaw().value());
 
 			SomeCameraClass.OnMouseMove(rawMouseMove.dx, rawMouseMove.dy);
 		}
@@ -59,6 +65,5 @@ int main()
 		*/
 	}
 
-	window.CloseWindow();
 	return 0;
 }

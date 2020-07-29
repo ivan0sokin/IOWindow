@@ -22,34 +22,34 @@
 	SOFTWARE.
 */
 
-#include "IOInput.h"
+#include "IOWindowInput.h"
 
-void IOInput::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept
+void IOWindowInput::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept
 {
 	keyboard = keyboardInput;
 }
 
-void IOInput::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
+void IOWindowInput::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
 {
 	mouse = mouseInput;
 }
 
-bool IOInput::HasMouse() const noexcept
+bool IOWindowInput::HasMouse() const noexcept
 {
 	return (mouse != nullptr);
 }
 
-bool IOInput::HasKeyboard() const noexcept
+bool IOWindowInput::HasKeyboard() const noexcept
 {
 	return (keyboard != nullptr);
 }
 
-std::shared_ptr<IOMouse> const& IOInput::GetMouse() const noexcept
+std::shared_ptr<IOMouse> const& IOWindowInput::GetMouse() const noexcept
 {
 	return this->mouse;
 }
 
-std::shared_ptr<IOKeyboard> const& IOInput::GetKeyboard() const noexcept
+std::shared_ptr<IOKeyboard> const& IOWindowInput::GetKeyboard() const noexcept
 {
 	return this->keyboard;
 }

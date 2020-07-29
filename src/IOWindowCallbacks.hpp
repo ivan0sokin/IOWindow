@@ -25,9 +25,12 @@
 #ifndef _IO_WINDOW_CALLBACKS_HPP
 #define _IO_WINDOW_CALLBACKS_HPP
 
-typedef void(*IOWindowScreenSizeCallbackFunction)(unsigned long windowScreenWidth, unsigned long windowScreenHeight);
-typedef void(*IOWindowScreenMoveCallbackFunction)(long windowScreenPosX, long windowScreenPosY);
-typedef void(*IOWindowSizeCallbackFunction)(unsigned long windowWidth, unsigned long windowHeight);
-typedef void(*IOWindowMoveCallbackFunction)(long windowPosX, long windowPosY);
+#include <functional>
+
+typedef std::function<void(unsigned long, unsigned long)> IOScreenSizeCallbackFunction;
+typedef std::function<void(long, long)> IOScreenMoveCallbackFunction;
+typedef std::function<void(unsigned long, unsigned long)> IOWindowSizeCallbackFunction;
+typedef std::function<void(long, long)> IOWindowMoveCallbackFunction;
+typedef std::function<void()> IOWindowCloseCallbackFunction;
 
 #endif
