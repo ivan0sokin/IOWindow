@@ -22,47 +22,40 @@
 	SOFTWARE.
 */
 
-#include "IOMouseEvent.h"
+#ifndef _IO_WIN32_WINDOW_HANDLE
+#define _IO_WIN32_WINDOW_HANDLE
 
-IOMouseEvent::IOMouseEvent(Type type, long x, long y, bool isLeftPressed, bool isRightPressed) noexcept
-{
-	this->type = type;
-	this->x = x;
-	this->y = y;
-	this->isLeftPressed = isLeftPressed;
-	this->isRightPressed = isRightPressed;
-}
+#include <Windows.h>
+#include <string>
 
-IOMouseEvent::IOMouseEvent(IOMouseEvent const &other) noexcept
+class IOWin32WindowHandle
 {
-	this->type = other.type;
-	this->x = other.x;
-	this->y = other.y;
-	this->isLeftPressed = other.isLeftPressed;
-	this->isRightPressed = other.isRightPressed;
-}
+public:
+	IOWin32WindowHandle() noexcept;
+	IOWin32WindowHandle(const IOWin32WindowHandle &other) = delete;
+	IOWin32WindowHandle(IOWin32WindowHandle &&other) = delete;
+	~IOWin32WindowHandle() noexcept;
 
-IOMouseEvent::Type IOMouseEvent::GetType() const noexcept
-{
-	return this->type;
-}
+	bool Create
+	(
+		DWORD extendedStyle,
+		std::string_view extendedClassName,
+		std::string_view title,
+		unsigned long width,
+		unsigned long height,
+		void *pParam
+	) noexcept;
+	bool Destroy() noexcept;
 
-bool IOMouseEvent::IsLeftPressed() const noexcept
-{
-	return this->isLeftPressed;
-}
+	HWND GetWindowHandle() const noexcept;
 
-bool IOMouseEvent::IsRightPressed() const noexcept
-{
-	return this->isRightPressed;
-}
+	IOWin32WindowHandle& operator=(const IOWin32WindowHandle &other) = delete;
+	IOWin32WindowHandle& operator=(IOWin32WindowHandle&& other) = delete;
+private:
+	HWND hWnd;
 
-long IOMouseEvent::GetPosX() const noexcept
-{
-	return this->x;
-}
+	static constexpr DWORD IO_WINDOW_STYLE = WS_OVERLAPPEDWINDOW;
+	static constexpr DWORD IO_WINDOW_POSITION = CW_USEDEFAULT;
+};
 
-long IOMouseEvent::GetPosY() const noexcept
-{
-	return this->y;
-}
+#endif

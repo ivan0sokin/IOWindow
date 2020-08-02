@@ -22,24 +22,58 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_MOUSE_RAW_HPP
-#define _IO_MOUSE_RAW_HPP
+#include "IOWin32WindowHandle.h"
 
-struct IOMouseRaw
+IOWin32WindowHandle::IOWin32WindowHandle() noexcept
 {
-	long dx;
-	long dy;
+	this->hWnd = nullptr;
+}
 
-	IOMouseRaw(long dx, long dy)
-	{
-		this->dx = dx;
-		this->dy = dy;
-	}
-	IOMouseRaw(IOMouseRaw const &other)
-	{
-		this->dx = other.dx;
-		this->dy = other.dy;
-	}
-};
+IOWin32WindowHandle::~IOWin32WindowHandle() noexcept
+{
+	this->Destroy();
+}
 
-#endif
+bool IOWin32WindowHandle::Destroy() noexcept
+{
+	if (!DestroyWindow(hWnd))
+		return false;
+
+	return true;
+}
+
+bool IOWin32WindowHandle::Create(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept
+{
+	RECT windowRect =
+	{
+		0, 0,
+		static_cast<long>(width), static_cast<long>(height)
+	};
+	AdjustWindowRect(&windowRect, IO_WINDOW_STYLE, FALSE);
+	
+	hWnd = CreateWindowEx
+	(
+		extendedStyle,
+		extendedClassName.data(),
+		title.data(),
+		IO_WINDOW_STYLE,
+		IO_WINDOW_POSITION,
+		IO_WINDOW_POSITION,
+		windowRect.right - windowRect.left,
+		windowRect.bottom - windowRect.top,
+		nullptr,
+		nullptr,
+		GetModuleHandle(nullptr),
+		pParam
+	);
+
+	if (hWnd == nullptr)
+		return false;
+
+	return true;
+}
+
+HWND IOWin32WindowHandle::GetWindowHandle() const noexcept
+{
+	return this->hWnd;
+}

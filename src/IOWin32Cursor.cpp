@@ -22,20 +22,20 @@
 	SOFTWARE.
 */
 
-#include "IOCursor.h"
+#include "IOWin32Cursor.h"
 
-IOCursor::IOCursor(HWND windowHandle) noexcept
+IOWin32Cursor::IOWin32Cursor(HWND windowHandle) noexcept
 {
 	this->windowHandle = windowHandle;
 }
 
-IOCursor::IOCursor(IOCursor const &other)
+IOWin32Cursor::IOWin32Cursor(IOWin32Cursor const &other)
 {
 	this->windowHandle = other.windowHandle;
 	this->isEnabled = other.isEnabled;
 }
 
-IOCursor& IOCursor::operator=(IOCursor const & other) noexcept
+IOWin32Cursor& IOWin32Cursor::operator=(IOWin32Cursor const &other) noexcept
 {
 	this->windowHandle = other.windowHandle;
 	this->isEnabled = other.isEnabled;
@@ -43,7 +43,7 @@ IOCursor& IOCursor::operator=(IOCursor const & other) noexcept
 	return *this;
 }
 
-void IOCursor::Enable() noexcept
+void IOWin32Cursor::Enable() noexcept
 {
 	isEnabled = true;
 
@@ -51,7 +51,7 @@ void IOCursor::Enable() noexcept
 	this->Free();
 }
 
-void IOCursor::Disable() noexcept
+void IOWin32Cursor::Disable() noexcept
 {
 	isEnabled = false;
 
@@ -59,22 +59,22 @@ void IOCursor::Disable() noexcept
 	this->Confine();
 }
 
-bool IOCursor::IsEnabled() const noexcept
+bool IOWin32Cursor::IsEnabled() const noexcept
 {
 	return this->isEnabled;
 }
 
-void IOCursor::Show() noexcept
+void IOWin32Cursor::Show() noexcept
 {
 	while (ShowCursor(TRUE) < 0);
 }
 
-void IOCursor::Hide() noexcept
+void IOWin32Cursor::Hide() noexcept
 {
 	while (ShowCursor(FALSE) >= 0);
 }
 
-void IOCursor::Confine() noexcept
+void IOWin32Cursor::Confine() noexcept
 {
 	RECT screenRect;
 	GetClientRect(windowHandle, &screenRect);
@@ -82,7 +82,7 @@ void IOCursor::Confine() noexcept
 	ClipCursor(&screenRect);
 }
 
-void IOCursor::Free() noexcept
+void IOWin32Cursor::Free() noexcept
 {
 	ClipCursor(nullptr);
 }

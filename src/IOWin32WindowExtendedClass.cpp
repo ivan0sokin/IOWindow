@@ -22,14 +22,14 @@
 	SOFTWARE.
 */
 
-#include "IOWindowExtendedClass.h"
+#include "IOWin32WindowExtendedClass.h"
 
-IOWindowExtendedClass::~IOWindowExtendedClass() noexcept
+IOWin32WindowExtendedClass::~IOWin32WindowExtendedClass() noexcept
 {
 	this->Destroy();
 }
 
-bool IOWindowExtendedClass::Destroy() noexcept
+bool IOWin32WindowExtendedClass::Destroy() noexcept
 {
 	if (!UnregisterClass(IO_WINDOW_CLASS_EX_NAME, GetModuleHandle(nullptr)))
 		return false;
@@ -37,7 +37,7 @@ bool IOWindowExtendedClass::Destroy() noexcept
 	return true;
 }
 
-bool IOWindowExtendedClass::Create(WNDPROC WndProc) noexcept
+bool IOWin32WindowExtendedClass::Create(WNDPROC WndProc) noexcept
 {
 	WNDCLASSEX windowClassEx;
 	ZeroMemory(&windowClassEx, sizeof(WNDCLASSEX));
@@ -61,7 +61,7 @@ bool IOWindowExtendedClass::Create(WNDPROC WndProc) noexcept
 	return true;
 }
 
-char const* IOWindowExtendedClass::GetWindowClassExName() const noexcept
+char const* IOWin32WindowExtendedClass::GetWindowClassExName() const noexcept
 {
 	return this->IO_WINDOW_CLASS_EX_NAME;
 }

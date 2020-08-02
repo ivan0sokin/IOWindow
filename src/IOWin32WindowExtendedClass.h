@@ -22,31 +22,28 @@
 	SOFTWARE.
 */
 
-#include "IOKeyboardEvent.h"
+#ifndef _IO_WIN32_WINDOW_CLASS_EX
+#define _IO_WIN32_WINDOW_CLASS_EX
 
-IOKeyboardEvent::IOKeyboardEvent(Type type, unsigned char key) noexcept
-{
-	this->type = type;
-	this->key = key;
-}
+#include <Windows.h>
 
-IOKeyboardEvent::IOKeyboardEvent(IOKeyboardEvent const &event) noexcept
+class IOWin32WindowExtendedClass
 {
-	this->type = event.type;
-	this->key = event.key;
-}
+public:
+	IOWin32WindowExtendedClass() = default;
+	IOWin32WindowExtendedClass(const IOWin32WindowExtendedClass &other) = delete;
+	IOWin32WindowExtendedClass(IOWin32WindowExtendedClass &&other) = delete;
+	~IOWin32WindowExtendedClass() noexcept;
 
-bool IOKeyboardEvent::IsPressed() const noexcept
-{
-	return type == Type::Pressed;
-}
+	IOWin32WindowExtendedClass& operator=(const IOWin32WindowExtendedClass &other) = delete;
+	IOWin32WindowExtendedClass& operator=(IOWin32WindowExtendedClass &&other) = delete;
 
-bool IOKeyboardEvent::IsReleased() const noexcept
-{
-	return type == Type::Released;
-}
+	bool Create(WNDPROC WndProc) noexcept;
+	bool Destroy() noexcept;
 
-unsigned char IOKeyboardEvent::GetKey() const noexcept
-{
-	return this->key;
-}
+	char const* GetWindowClassExName() const noexcept;
+private:
+	static constexpr char const* IO_WINDOW_CLASS_EX_NAME = "IOWin32WindowExtendedClass";
+};
+
+#endif

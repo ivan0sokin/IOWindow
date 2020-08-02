@@ -22,30 +22,30 @@
 	SOFTWARE.
 */
 
-#include "IOWindowContext.h"
+#include "IOWin32WindowContext.h"
 
-IOWindowContext::IOWindowContext() noexcept
+IOWin32WindowContext::IOWin32WindowContext() noexcept
 {
 	this->windowHandle = nullptr;
 }
 
-IOWindowContext::IOWindowContext(HWND hWnd) noexcept
+IOWin32WindowContext::IOWin32WindowContext(HWND hWnd) noexcept
 {
 	this->windowHandle = hWnd;
 }
 
-IOWindowContext::IOWindowContext(IOWindowContext const &other) noexcept
+IOWin32WindowContext::IOWin32WindowContext(IOWin32WindowContext const &other) noexcept
 {
 	this->windowHandle = other.windowHandle;
 }
 
-IOWindowContext::IOWindowContext(IOWindowContext &&other) noexcept
+IOWin32WindowContext::IOWin32WindowContext(IOWin32WindowContext &&other) noexcept
 {
 	this->windowHandle = other.windowHandle;
 	other.windowHandle = nullptr;
 }
 
-IOWindowContext& IOWindowContext::operator=(IOWindowContext const &other) noexcept
+IOWin32WindowContext& IOWin32WindowContext::operator=(IOWin32WindowContext const &other) noexcept
 {
 	if (this == &other)
 		return *this;
@@ -55,7 +55,7 @@ IOWindowContext& IOWindowContext::operator=(IOWindowContext const &other) noexce
 	return *this;
 }
 
-IOWindowContext& IOWindowContext::operator=(IOWindowContext &&other) noexcept
+IOWin32WindowContext& IOWin32WindowContext::operator=(IOWin32WindowContext &&other) noexcept
 {
 	if (this == &other)
 		return *this;
@@ -66,12 +66,12 @@ IOWindowContext& IOWindowContext::operator=(IOWindowContext &&other) noexcept
 	return *this;
 }
 
-IOWindowContext::~IOWindowContext() noexcept
+IOWin32WindowContext::~IOWin32WindowContext() noexcept
 {
 	this->Destroy();
 }
 
-bool IOWindowContext::Destroy() noexcept
+bool IOWin32WindowContext::Destroy() noexcept
 {
 	if (renderingContextHandle == nullptr)
 		return false;
@@ -85,7 +85,7 @@ bool IOWindowContext::Destroy() noexcept
 	return wglDeleteContext(renderingContextHandle);
 }
 
-bool IOWindowContext::Release() noexcept
+bool IOWin32WindowContext::Release() noexcept
 {
 	HDC deviceContextHandle = GetDC(windowHandle);
 	if (deviceContextHandle == nullptr)
@@ -94,7 +94,7 @@ bool IOWindowContext::Release() noexcept
 	return wglMakeCurrent(deviceContextHandle, nullptr);
 }
 
-bool IOWindowContext::Create() noexcept
+bool IOWin32WindowContext::Create() noexcept
 {
 	if (!this->SetPixelFormat())
 		return false;
@@ -108,7 +108,7 @@ bool IOWindowContext::Create() noexcept
 	return wglMakeCurrent(deviceContextHandle, renderingContextHandle);
 }
 
-bool IOWindowContext::MakeCurrent() noexcept
+bool IOWin32WindowContext::MakeCurrent() noexcept
 {
 	HDC deviceContextHandle = GetDC(windowHandle);
 	if (deviceContextHandle == nullptr)
@@ -120,12 +120,12 @@ bool IOWindowContext::MakeCurrent() noexcept
 	return wglMakeCurrent(deviceContextHandle, renderingContextHandle);
 }
 
-void IOWindowContext::SwapBuffers() noexcept
+void IOWin32WindowContext::SwapBuffers() noexcept
 {
 	::SwapBuffers(GetDC(windowHandle));
 }
 
-bool IOWindowContext::SetPixelFormat() noexcept
+bool IOWin32WindowContext::SetPixelFormat() noexcept
 {
 	PIXELFORMATDESCRIPTOR pixelFormatDescriptor;
 	ZeroMemory(&pixelFormatDescriptor, sizeof(PIXELFORMATDESCRIPTOR));

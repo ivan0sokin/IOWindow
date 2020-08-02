@@ -22,28 +22,10 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_WINDOW_CLASS_EX
-#define _IO_WINDOW_CLASS_EX
+#ifndef _IO_KEYBOARD_ACTIONS_H
+#define _IO_KEYBOARD_ACTIONS_H
 
-#include <Windows.h>
-
-class IOWindowExtendedClass
-{
-public:
-	IOWindowExtendedClass() = default;
-	IOWindowExtendedClass(const IOWindowExtendedClass &other) = delete;
-	IOWindowExtendedClass(IOWindowExtendedClass &&other) = delete;
-	~IOWindowExtendedClass() noexcept;
-
-	IOWindowExtendedClass& operator=(const IOWindowExtendedClass &other) = delete;
-	IOWindowExtendedClass& operator=(IOWindowExtendedClass &&other) = delete;
-
-	bool Create(WNDPROC WndProc) noexcept;
-	bool Destroy() noexcept;
-
-	char const* GetWindowClassExName() const noexcept;
-private:
-	static constexpr char const* IO_WINDOW_CLASS_EX_NAME = "IOWindowExtendedClass";
-};
+constexpr unsigned IO_KEY_RELEASE = 0u;
+constexpr unsigned IO_KEY_PRESS = 1u;
 
 #endif

@@ -22,46 +22,20 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_MOUSE_EVENT_H
-#define _IO_MOUSE_EVENT_H
+#include "IOConfig.h"
 
-class IOMouseEvent
+IOConfig::IOConfig() noexcept
 {
-	friend class IOMouse;
-public:
-	enum class Type
-	{
-		LeftPressed,
-		LeftReleased,
-		RightPressed,
-		RightReleased,
-		WheelUp,
-		WheelDown,
-		Move,
-		Enter,
-		Leave
-	};
+	#ifdef _WIN32
+		this->platform = Platform::Windows;
+	#elif __linux__
+		this->platform = Platform::Linux;
+	#else
+		this->platform = Platform::None;
+	#endif
+}
 
-	IOMouseEvent() = default;
-	IOMouseEvent(Type type, long x, long y, bool isLeftPressed, bool isRightPressed) noexcept;
-	IOMouseEvent(IOMouseEvent const &other) noexcept;
-	~IOMouseEvent() = default;
-
-	Type GetType() const noexcept;
-
-	bool IsLeftPressed() const noexcept;
-	bool IsRightPressed() const noexcept;
-
-	long GetPosX() const noexcept;
-	long GetPosY() const noexcept;
-private:
-	Type type;
-
-	long x;
-	long y;
-
-	bool isLeftPressed;
-	bool isRightPressed;
-};
-
-#endif
+IOConfig::Platform const& IOConfig::GetPlatform() noexcept
+{
+	return platform;
+}

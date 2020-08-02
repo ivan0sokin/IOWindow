@@ -22,34 +22,23 @@
 	SOFTWARE.
 */
 
-#include "IOWindowInput.h"
+#ifndef _IO_CONFIG_HPP
+#define _IO_CONFIG_HPP
 
-void IOWindowInput::SetKeyboardInput(std::shared_ptr<IOKeyboard> const &keyboardInput) noexcept
+class IOConfig
 {
-	keyboard = keyboardInput;
-}
+public:
+	enum class Platform
+	{
+		None = 0,
+		Windows,
+		Linux
+	};
 
-void IOWindowInput::SetMouseInput(std::shared_ptr<IOMouse> const &mouseInput) noexcept
-{
-	mouse = mouseInput;
-}
+	IOConfig() noexcept;
+	Platform const& GetPlatform() noexcept;
+private:
+	Platform platform;
+};
 
-bool IOWindowInput::HasMouse() const noexcept
-{
-	return (mouse != nullptr);
-}
-
-bool IOWindowInput::HasKeyboard() const noexcept
-{
-	return (keyboard != nullptr);
-}
-
-std::shared_ptr<IOMouse> const& IOWindowInput::GetMouse() const noexcept
-{
-	return this->mouse;
-}
-
-std::shared_ptr<IOKeyboard> const& IOWindowInput::GetKeyboard() const noexcept
-{
-	return this->keyboard;
-}
+#endif

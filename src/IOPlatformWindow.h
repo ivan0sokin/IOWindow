@@ -2,7 +2,7 @@
 	MIT License
 
 	Copyright (c) 2020 x4kkk3r
-	
+
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
@@ -22,32 +22,38 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_WINDOW_H
-#define _IO_WINDOW_H
+#ifndef _IO_PLATFORM_WINDOW_H
+#define _IO_PLATFORM_WINDOW_H
 
-#include "IOPlatformWindow.h"
+#include "IOConfig.h"
 
-class IOWindow
+#include "IOWindowCallbacks.hpp"
+#include "IOKeyboardMappings.h"
+#include "IOKeyboardActions.h"
+#include "IOMouseButtons.h"
+#include "IOMouseActions.h"
+
+class IOPlatformWindow
 {
 public:
-	IOWindow() noexcept;
-	IOWindow(const IOWindow &other) = delete;
-	IOWindow(IOWindow &&other) = delete;
-	~IOWindow() noexcept;
+	IOPlatformWindow() = default;
+	virtual ~IOPlatformWindow() noexcept = 0;
 
-	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept;
-	bool Close() noexcept;
+	static IOPlatformWindow* CreateInstance() noexcept;
 
-	void ProcessEvents() noexcept;
+	virtual bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept = 0;
+	virtual bool Close() noexcept = 0;
 
-	void EnableRawMouseInput() noexcept;
-	void DisableRawMouseInput() noexcept;
+	virtual void ProcessEvents() noexcept = 0;
 
-	void EnableMouseCursor() noexcept;
-	void DisableMouseCursor() noexcept;
+	virtual void EnableRawMouseInput() noexcept = 0;
+	virtual void DisableRawMouseInput() noexcept = 0;
 
-	void EnableAutorepeat() noexcept;
-	void DisableAutorepeat() noexcept;
+	virtual void EnableMouseCursor() noexcept = 0;
+	virtual void DisableMouseCursor() noexcept = 0;
+
+	virtual void EnableAutorepeat() noexcept = 0;
+	virtual void DisableAutorepeat() noexcept = 0;
 
 	void OnResize(IOWindowResizeCallbackFunction windowResizeCallbackFunction) noexcept;
 	void OnMove(IOWindowMoveCallbackFunction windowMoveCallbackFunction) noexcept;
@@ -62,20 +68,26 @@ public:
 
 	void OnMouseScroll(IOMouseScrollCallbackFunction mouseScrollCallbackFunction) noexcept;
 
-	bool CreateContext() noexcept;
-	bool DestroyContext() noexcept;
-	void SwapBuffers() noexcept;
+	virtual bool CreateContext() noexcept = 0;
+	virtual bool DestroyContext() noexcept = 0;
+	virtual void SwapBuffers() noexcept = 0;
 
-	void GetTitle(char *pWindowTitle) noexcept;
-	void GetResolution(unsigned long *pWindowWidth, unsigned long *pWindowHeight) noexcept;
-	void GetPosition(long *pWindowPosX, long *pWindowPosY) noexcept;
+	virtual void GetTitle(char *pWindowTitle) noexcept = 0;
+	virtual void GetResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept = 0;
+	virtual void GetPosition(long *pWindowPosX, long *pWindowPosY) noexcept = 0;
+protected:
+	IOWindowResizeCallbackFunction resizeCallback;
+	IOWindowMoveCallbackFunction moveCallback;
+	IOWindowCloseCallbackFunction closeCallback;
 
-	IOWindow& operator=(const IOWindow &other) = delete;
-	IOWindow& operator=(IOWindow &&other) = delete;
+	IOKeyboardInputCallbackFunction keyboardInputCallback;
+	IOMouseInputCallbackFunction mouseInputCallback;
+	IOMouseMoveCallbackFunction mouseMoveCallback;
+	IORawMouseMoveCallbackFunction rawMouseMoveCallback;
 
-	std::shared_ptr<IOPlatformWindow> const& GetPlatformWindow() noexcept;
-private:
-	std::shared_ptr<IOPlatformWindow> platformWindow;
+	IOMouseEnterCallbackFunction mouseEnterCallback;
+
+	IOMouseScrollCallbackFunction mouseScrollCallback;
 };
 
 #endif

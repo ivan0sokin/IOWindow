@@ -27,10 +27,17 @@
 
 #include <functional>
 
-typedef std::function<void(unsigned long, unsigned long)> IOScreenSizeCallbackFunction;
-typedef std::function<void(long, long)> IOScreenMoveCallbackFunction;
-typedef std::function<void(unsigned long, unsigned long)> IOWindowSizeCallbackFunction;
+typedef std::function<void(unsigned long, unsigned long)> IOWindowResizeCallbackFunction;
 typedef std::function<void(long, long)> IOWindowMoveCallbackFunction;
 typedef std::function<void()> IOWindowCloseCallbackFunction;
+
+typedef std::function<void(unsigned, unsigned, unsigned)> IOKeyboardInputCallbackFunction;
+typedef std::function<void(unsigned, unsigned)> IOMouseInputCallbackFunction;
+typedef std::function<void(long, long)> IOMouseMoveCallbackFunction;
+typedef std::function<void(long, long)> IORawMouseMoveCallbackFunction;
+
+typedef std::function<void(unsigned)> IOMouseEnterCallbackFunction;
+
+typedef std::function<void(double)> IOMouseScrollCallbackFunction;
 
 #endif

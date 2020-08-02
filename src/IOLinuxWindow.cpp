@@ -22,32 +22,22 @@
 	SOFTWARE.
 */
 
-#include <IOWindow/IOWindow.h>
+#ifdef __linux__
 
-int main()
+#include "IOLinuxWindow.h"
+
+IOLinuxWindow::IOLinuxWindow() noexcept
 {
-	IOWindow window = IOWindow();
-
-	if (!window.Create("1st example", 500ul, 500ul))
-	{
-		printf("%s\n", window.GetLastError().c_str());
-		exit(-1);
-	}
-
-	auto keyboard = std::make_shared<IOKeyboard>();
-
-	window.SetKeyboardInput(keyboard);
-
-	while (true)
-	{
-		window.PollMessages();
-
-		if (keyboard->IsKeyPressed(IO_KEY_ESCAPE))
-		{
-			window.Close();
-			exit(0);
-		}
-	}
-
-	return 0;
+	
 }
+
+IOLinuxWindow::~IOLinuxWindow()
+{
+}
+
+bool IOLinuxWindow::CreateXWindow() noexcept
+{
+
+}
+
+#endif

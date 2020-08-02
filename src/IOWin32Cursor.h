@@ -22,48 +22,34 @@
 	SOFTWARE.
 */
 
-#include <IOWindow/IOWindow.h>
+#ifndef _IO_WIN32_CURSOR_H
+#define _IO_WIN32_CURSOR_H
 
-int main()
+#include <Windows.h>
+
+class IOWin32Cursor
 {
-	IOWindow window = IOWindow();
+	friend class IOWin32Window;
+public:
+	IOWin32Cursor() = default;
+	IOWin32Cursor(HWND windowHandle) noexcept;
+	IOWin32Cursor(IOWin32Cursor const &other);
+	~IOWin32Cursor() = default;
 
-	if (!window.Create("2nd example", 500ul, 500ul))
-	{
-		printf("%s\n", window.GetLastError().c_str());
-		exit(-1);
-	}
+	IOWin32Cursor& operator=(IOWin32Cursor const &other) noexcept;
 
-	auto mouse = std::make_shared<IOMouse>();
-	window.SetMouseInput(mouse);
-	window.EnableRawMouseInput();
+	void Enable() noexcept;
+	void Disable() noexcept;
+	bool IsEnabled() const noexcept;
+private:
+	bool isEnabled = true;
 
-	window.OnWindowClose([]()
-	{
-		window.Close();
-		exit(0);
-	});
+	HWND windowHandle;
 
-	while (true)
-	{
-		window.PollMessages();
+	void Show() noexcept;
+	void Hide() noexcept;
+	void Confine() noexcept;
+	void Free() noexcept;
+};
 
-		while (auto rawMouseMove = mouse->ReadRaw())
-		{
-			SomeCameraClass.OnMouseMove(rawMouseMove.value().dx, rawMouseMove.value().dy);
-		}
-
-		/* or you can use this:
-
-		while (!mouse->IsRawBufferEmpty())
-		{
-			IOMouseRaw rawMouseMove = IOMouseRaw(mouse->ReadRaw().value());
-
-			SomeCameraClass.OnMouseMove(rawMouseMove.dx, rawMouseMove.dy);
-		}
-
-		*/
-	}
-
-	return 0;
-}
+#endif

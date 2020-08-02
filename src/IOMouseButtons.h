@@ -22,34 +22,18 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_CURSOR_H
-#define _IO_CURSOR_H
+#ifndef _IO_MOUSE_BUTTONS_H
+#define _IO_MOUSE_BUTTONS_H
 
-#include <Windows.h>
+constexpr unsigned IO_MOUSE_BUTTON_1 = 0;
+constexpr unsigned IO_MOUSE_BUTTON_2 = 1;
+constexpr unsigned IO_MOUSE_BUTTON_3 = 2;
+constexpr unsigned IO_MOUSE_BUTTON_4 = 3;
+constexpr unsigned IO_MOUSE_BUTTON_5 = 4;
 
-class IOCursor
-{
-	friend class IOWindow;
-public:
-	IOCursor() = default;
-	IOCursor(HWND windowHandle) noexcept;
-	IOCursor(IOCursor const &other);
-	~IOCursor() = default;
-
-	IOCursor& operator=(IOCursor const &other) noexcept;
-
-	void Enable() noexcept;
-	void Disable() noexcept;
-	bool IsEnabled() const noexcept;
-private:
-	bool isEnabled = true;
-
-	HWND windowHandle;
-
-	void Show() noexcept;
-	void Hide() noexcept;
-	void Confine() noexcept;
-	void Free() noexcept;
-};
+constexpr unsigned IO_MOUSE_BUTTON_LEFT = IO_MOUSE_BUTTON_1;
+constexpr unsigned IO_MOUSE_BUTTON_RIGHT = IO_MOUSE_BUTTON_2;
+constexpr unsigned IO_MOUSE_BUTTON_MIDDLE = IO_MOUSE_BUTTON_3;
+constexpr unsigned IO_MOUSE_BUTTON_LAST = IO_MOUSE_BUTTON_5;
 
 #endif

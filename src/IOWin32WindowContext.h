@@ -22,29 +22,37 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_KEYBOARD_EVENT_H
-#define _IO_KEYBOARD_EVENT_H
+#ifndef _IO_WIN32_WINDOW_CONTEXT_H
+#define _IO_WIN32_WINDOW_CONTEXT_H
 
-class IOKeyboardEvent
+#pragma comment(lib, "opengl32.lib")
+
+#include <Windows.h>
+
+class IOWin32WindowContext
 {
 public:
-	enum class Type
-	{
-		Pressed,
-		Released
-	};
+	IOWin32WindowContext() noexcept;
+	IOWin32WindowContext(HWND hWnd) noexcept;
+	IOWin32WindowContext(IOWin32WindowContext const &other) noexcept;
+	IOWin32WindowContext(IOWin32WindowContext &&other) noexcept;
+	~IOWin32WindowContext() noexcept;
 
-	IOKeyboardEvent() = default;
-	IOKeyboardEvent(Type type, unsigned char key) noexcept;
-	IOKeyboardEvent(IOKeyboardEvent const &other) noexcept;
-	~IOKeyboardEvent() = default;
+	bool Create() noexcept;
+	bool Destroy() noexcept;
 
-	bool IsPressed() const noexcept;
-	bool IsReleased() const noexcept;
-	unsigned char GetKey() const noexcept;
+	bool MakeCurrent() noexcept;
+	bool Release() noexcept;
+
+	void SwapBuffers() noexcept;
+
+	IOWin32WindowContext& operator=(IOWin32WindowContext const &other) noexcept;
+	IOWin32WindowContext& operator=(IOWin32WindowContext &&other) noexcept;
 private:
-	Type type;
-	unsigned char key;
+	HWND windowHandle;
+	HGLRC renderingContextHandle;
+
+	bool SetPixelFormat() noexcept;
 };
 
 #endif
