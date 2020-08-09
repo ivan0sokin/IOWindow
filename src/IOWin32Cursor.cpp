@@ -24,6 +24,7 @@
 
 #include "IOWin32Cursor.h"
 
+#ifdef _WIN32
 IOWin32Cursor::IOWin32Cursor(HWND windowHandle) noexcept
 {
 	this->windowHandle = windowHandle;
@@ -86,3 +87,4 @@ void IOWin32Cursor::Free() noexcept
 {
 	ClipCursor(nullptr);
 }
+#endif

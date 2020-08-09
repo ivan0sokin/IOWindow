@@ -24,6 +24,7 @@
 
 #include "IOWin32WindowExtendedClass.h"
 
+#ifdef _WIN32
 IOWin32WindowExtendedClass::~IOWin32WindowExtendedClass() noexcept
 {
 	this->Destroy();
@@ -65,3 +66,4 @@ char const* IOWin32WindowExtendedClass::GetWindowClassExName() const noexcept
 {
 	return this->IO_WINDOW_CLASS_EX_NAME;
 }
+#endif

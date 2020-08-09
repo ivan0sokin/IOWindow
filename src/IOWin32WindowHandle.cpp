@@ -24,6 +24,7 @@
 
 #include "IOWin32WindowHandle.h"
 
+#ifdef _WIN32
 IOWin32WindowHandle::IOWin32WindowHandle() noexcept
 {
 	this->hWnd = nullptr;
@@ -77,3 +78,4 @@ HWND IOWin32WindowHandle::GetWindowHandle() const noexcept
 {
 	return this->hWnd;
 }
+#endif

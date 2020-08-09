@@ -24,6 +24,7 @@
 
 #include "IOWin32WindowContext.h"
 
+#ifdef _WIN32
 IOWin32WindowContext::IOWin32WindowContext() noexcept
 {
 	this->windowHandle = nullptr;
@@ -150,3 +151,4 @@ bool IOWin32WindowContext::SetPixelFormat() noexcept
 
 	return true;
 }
+#endif

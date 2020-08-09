@@ -31,7 +31,7 @@
 class IOWin32Window : public IOPlatformWindow
 {
 public:
-	IOWin32Window() = default;
+	IOWin32Window() noexcept = default;
 	~IOWin32Window() noexcept override { return; };
 
 	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept override { return false; };
@@ -44,6 +44,9 @@ public:
 
 	void EnableMouseCursor() noexcept override { return; };
 	void DisableMouseCursor() noexcept override { return; };
+
+	void EnableAutorepeat() noexcept override { return; };
+	void DisableAutorepeat() noexcept override { return; };
 
 	bool CreateContext() noexcept override { return false; };
 	bool DestroyContext() noexcept override { return false; };

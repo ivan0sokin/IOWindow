@@ -22,10 +22,9 @@
 	SOFTWARE.
 */
 
-#ifdef _WIN32
-
 #include "IOWin32Window.h"
 
+#ifdef _WIN32
 IOWin32Window::IOWin32Window() noexcept
 {
 	this->extendedClass = std::make_unique<IOWin32WindowExtendedClass>();
@@ -690,5 +689,4 @@ bool IOWin32Window::IsCursorInScreenBounds(unsigned long cursorPosX, unsigned lo
 		) ? true : false
 	);
 }
-
 #endif

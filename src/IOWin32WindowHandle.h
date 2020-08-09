@@ -25,6 +25,7 @@
 #ifndef _IO_WIN32_WINDOW_HANDLE
 #define _IO_WIN32_WINDOW_HANDLE
 
+#ifdef _WIN32
 #include <Windows.h>
 #include <string>
 
@@ -57,5 +58,6 @@ private:
 	static constexpr DWORD IO_WINDOW_STYLE = WS_OVERLAPPEDWINDOW;
 	static constexpr DWORD IO_WINDOW_POSITION = CW_USEDEFAULT;
 };
+#endif
 
 #endif

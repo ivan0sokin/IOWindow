@@ -25,6 +25,7 @@
 #ifndef _IO_WIN32_WINDOW_CLASS_EX
 #define _IO_WIN32_WINDOW_CLASS_EX
 
+#ifdef _WIN32
 #include <Windows.h>
 
 class IOWin32WindowExtendedClass
@@ -45,5 +46,6 @@ public:
 private:
 	static constexpr char const* IO_WINDOW_CLASS_EX_NAME = "IOWin32WindowExtendedClass";
 };
+#endif
 
 #endif

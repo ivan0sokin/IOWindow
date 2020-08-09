@@ -60,15 +60,42 @@ public:
 
 #ifdef __linux__
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
 class IOLinuxWindow : public IOPlatformWindow
 {
 public:
 	IOLinuxWindow() noexcept;
-	~IOLinuxWindow() override;
+	~IOLinuxWindow() noexcept override;
 
 	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept override;
-private:
+	bool Close() noexcept override;
 
+	void ProcessEvents() noexcept override;
+
+ 	void EnableRawMouseInput() noexcept override;
+	void DisableRawMouseInput() noexcept override;
+
+	void EnableMouseCursor() noexcept override;
+	void DisableMouseCursor() noexcept override;
+
+	void EnableAutorepeat() noexcept override;
+	void DisableAutorepeat() noexcept override;
+
+	bool CreateContext() noexcept override;
+	bool DestroyContext() noexcept override;
+	void SwapBuffers() noexcept override;
+
+	void GetTitle(char *pWindowTitle) noexcept override;
+	void GetResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept override;
+	void GetPosition(long *pWindowPosX, long *pWindowPosY) noexcept override;
+private:
+	Display* display;
+	Screen* screen;
+	int currentScreen;
+	Window rootWindow;
+	Window window;
 };
 
 #endif

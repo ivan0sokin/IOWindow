@@ -25,6 +25,7 @@
 #ifndef _IO_WIN32_WINDOW_CONTEXT_H
 #define _IO_WIN32_WINDOW_CONTEXT_H
 
+#ifdef _WIN32
 #pragma comment(lib, "opengl32.lib")
 
 #include <Windows.h>
@@ -54,5 +55,6 @@ private:
 
 	bool SetPixelFormat() noexcept;
 };
+#endif
 
 #endif

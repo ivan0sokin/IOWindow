@@ -33,6 +33,9 @@
 #include "IOMouseButtons.h"
 #include "IOMouseActions.h"
 
+#include <string_view>
+#include <memory>
+
 class IOPlatformWindow
 {
 public:
@@ -40,7 +43,7 @@ public:
 	virtual ~IOPlatformWindow() noexcept = 0;
 
 	static IOPlatformWindow* CreateInstance() noexcept;
-
+	
 	virtual bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept = 0;
 	virtual bool Close() noexcept = 0;
 

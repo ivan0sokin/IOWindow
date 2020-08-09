@@ -25,6 +25,7 @@
 #ifndef _IO_WIN32_CURSOR_H
 #define _IO_WIN32_CURSOR_H
 
+#ifdef _WIN32
 #include <Windows.h>
 
 class IOWin32Cursor
@@ -51,5 +52,6 @@ private:
 	void Confine() noexcept;
 	void Free() noexcept;
 };
+#endif
 
 #endif
