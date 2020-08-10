@@ -36,7 +36,7 @@ public:
 	~IOWindow() noexcept;
 
 	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept;
-	bool Close() noexcept;
+	void Close() noexcept;
 
 	void ProcessEvents() noexcept;
 

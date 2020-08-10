@@ -22,29 +22,37 @@
 	SOFTWARE.
 */
 
-#ifndef _IO_WIN32_WINDOW_CLASS_EX
-#define _IO_WIN32_WINDOW_CLASS_EX
+#ifndef _IO_LINUX_WINDOW_HANDLE_H
+#define _IO_LINUX_WINDOW_HANDLE_H
 
-#ifdef _WIN32
-#include <Windows.h>
+#ifdef __linux__
 
-class IOWin32WindowExtendedClass
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+#include <string_view>
+
+class IOLinuxWindowHandle
 {
 public:
-	IOWin32WindowExtendedClass() = default;
-	IOWin32WindowExtendedClass(const IOWin32WindowExtendedClass &other) = delete;
-	IOWin32WindowExtendedClass(IOWin32WindowExtendedClass &&other) = delete;
-	~IOWin32WindowExtendedClass() noexcept;
+    IOLinuxWindowHandle() noexcept = default;
+    IOLinuxWindowHandle(const IOLinuxWindowHandle &other) = delete;
+	IOLinuxWindowHandle(IOLinuxWindowHandle &&other) = delete;
+	~IOLinuxWindowHandle() noexcept;
 
-	IOWin32WindowExtendedClass& operator=(const IOWin32WindowExtendedClass &other) = delete;
-	IOWin32WindowExtendedClass& operator=(IOWin32WindowExtendedClass &&other) = delete;
-
-	bool Create(WNDPROC WndProc) noexcept;
+	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept;
 	void Destroy() noexcept;
 
-	char const* GetWindowClassExName() const noexcept;
+    Window GetWindowHandle() const noexcept;
+	Display* GetDisplayHandle() const noexcept;
+
+    IOLinuxWindowHandle& operator=(const IOLinuxWindowHandle &other) = delete;
+	IOLinuxWindowHandle& operator=(IOLinuxWindowHandle&& other) = delete;
 private:
-	static constexpr char const* IO_WINDOW_CLASS_EX_NAME = "IOWin32WindowExtendedClass";
+    Display* displayHandle;
+	Screen* screenHandle;
+	Window rootWindowHandle;
+	Window windowHandle;
 };
 #endif
 

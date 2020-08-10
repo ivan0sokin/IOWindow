@@ -27,7 +27,7 @@
 
 #include "IOConfig.h"
 
-#include "IOWindowCallbacks.hpp"
+#include "IOWindowCallbacks.h"
 #include "IOKeyboardMappings.h"
 #include "IOKeyboardActions.h"
 #include "IOMouseButtons.h"
@@ -45,7 +45,7 @@ public:
 	static IOPlatformWindow* CreateInstance() noexcept;
 	
 	virtual bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept = 0;
-	virtual bool Close() noexcept = 0;
+	virtual void Close() noexcept = 0;
 
 	virtual void ProcessEvents() noexcept = 0;
 

@@ -32,7 +32,7 @@
 class IOWin32WindowHandle
 {
 public:
-	IOWin32WindowHandle() noexcept;
+	IOWin32WindowHandle() noexcept = default;
 	IOWin32WindowHandle(const IOWin32WindowHandle &other) = delete;
 	IOWin32WindowHandle(IOWin32WindowHandle &&other) = delete;
 	~IOWin32WindowHandle() noexcept;
@@ -46,7 +46,7 @@ public:
 		unsigned long height,
 		void *pParam
 	) noexcept;
-	bool Destroy() noexcept;
+	void Destroy() noexcept;
 
 	HWND GetWindowHandle() const noexcept;
 

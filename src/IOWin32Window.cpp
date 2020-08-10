@@ -36,7 +36,7 @@ IOWin32Window::IOWin32Window() noexcept
 
 void IOWin32Window::FillKeyCodes() noexcept
 {
-	memset(keyCodes.data(), IO_KEY_UNKNOWN, sizeof(unsigned char) * keyCodes.size());
+	memset(keyCodes.data(), IO_KEY_UNKNOWN, keyCodes.size());
 
 	keyCodes[0x08] = IO_KEY_BACKSPACE;
 	keyCodes[0x09] = IO_KEY_TAB;

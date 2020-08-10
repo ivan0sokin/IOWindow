@@ -25,22 +25,14 @@
 #include "IOWin32WindowHandle.h"
 
 #ifdef _WIN32
-IOWin32WindowHandle::IOWin32WindowHandle() noexcept
-{
-	this->hWnd = nullptr;
-}
-
 IOWin32WindowHandle::~IOWin32WindowHandle() noexcept
 {
 	this->Destroy();
 }
 
-bool IOWin32WindowHandle::Destroy() noexcept
+void IOWin32WindowHandle::Destroy() noexcept
 {
-	if (!DestroyWindow(hWnd))
-		return false;
-
-	return true;
+	DestroyWindow(hWnd);
 }
 
 bool IOWin32WindowHandle::Create(DWORD extendedStyle, std::string_view extendedClassName, std::string_view title, unsigned long width, unsigned long height, void *pParam) noexcept

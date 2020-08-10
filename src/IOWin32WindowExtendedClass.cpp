@@ -30,12 +30,9 @@ IOWin32WindowExtendedClass::~IOWin32WindowExtendedClass() noexcept
 	this->Destroy();
 }
 
-bool IOWin32WindowExtendedClass::Destroy() noexcept
+void IOWin32WindowExtendedClass::Destroy() noexcept
 {
-	if (!UnregisterClass(IO_WINDOW_CLASS_EX_NAME, GetModuleHandle(nullptr)))
-		return false;
-
-	return true;
+	UnregisterClass(IO_WINDOW_CLASS_EX_NAME, GetModuleHandle(nullptr));
 }
 
 bool IOWin32WindowExtendedClass::Create(WNDPROC WndProc) noexcept

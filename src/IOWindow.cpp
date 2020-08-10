@@ -34,14 +34,14 @@ IOWindow::~IOWindow() noexcept
 	platformWindow->Close();
 }
 
+void IOWindow::Close() noexcept
+{
+	platformWindow->Close();
+}
+
 bool IOWindow::Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept
 {
 	return platformWindow->Create(windowTitle, windowWidth, windowHeight);
-}
-
-bool IOWindow::Close() noexcept
-{
-	return platformWindow->Close();
 }
 
 void IOWindow::ProcessEvents() noexcept

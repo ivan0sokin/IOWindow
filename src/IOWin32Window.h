@@ -35,7 +35,7 @@ public:
 	~IOWin32Window() noexcept override { return; };
 
 	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept override { return false; };
-	bool Close() noexcept override { return false; };
+	void Close() noexcept override { return; };
 
 	void ProcessEvents() noexcept override { return; };
 
@@ -100,6 +100,14 @@ public:
 
 	HWND GetWindowHandle() noexcept;
 private:
+	void FillKeyCodes() noexcept;
+
+	static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK WndProcThunk(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
+	LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
+	static WPARAM MapLeftRightKeys(WPARAM wParam, LPARAM lParam) noexcept;
+	bool IsCursorInScreenBounds(unsigned long cursorPosX, unsigned long cursorPosY) noexcept;
+private:
 	std::unique_ptr<IOWin32WindowExtendedClass> extendedClass;
 	std::unique_ptr<IOWin32WindowHandle> handle;
 	std::unique_ptr<IOWin32WindowContext> context;
@@ -109,14 +117,6 @@ private:
 
 	std::array<unsigned, 256> keyCodes;
 	std::vector<BYTE> rawBuffer;
-
-	void FillKeyCodes() noexcept;
-
-	static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
-	static LRESULT CALLBACK WndProcThunk(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
-	static WPARAM MapLeftRightKeys(WPARAM wParam, LPARAM lParam) noexcept;
-	bool IsCursorInScreenBounds(unsigned long cursorPosX, unsigned long cursorPosY) noexcept;
 };
 
 #endif

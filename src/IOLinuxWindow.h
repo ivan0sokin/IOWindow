@@ -60,8 +60,12 @@ public:
 
 #ifdef __linux__
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include "IOLinuxWindowHandle.h"
+
+#include <iostream>
+#include <X11/XKBlib.h>
+#include <array>
+#include <memory.h>
 
 class IOLinuxWindow : public IOPlatformWindow
 {
@@ -70,7 +74,7 @@ public:
 	~IOLinuxWindow() noexcept override;
 
 	bool Create(std::string_view windowTitle, unsigned long windowWidth, unsigned long windowHeight) noexcept override;
-	bool Close() noexcept override;
+	void Close() noexcept override;
 
 	void ProcessEvents() noexcept override;
 
@@ -90,12 +94,17 @@ public:
 	void GetTitle(char *pWindowTitle) noexcept override;
 	void GetResolution(unsigned long *pWindowScreenWidth, unsigned long *pWindowScreenHeight) noexcept override;
 	void GetPosition(long *pWindowPosX, long *pWindowPosY) noexcept override;
+
+	Window GetWindowHandle() const noexcept;
+	Display* GetDisplayHandle() const noexcept;
 private:
-	Display* display;
-	Screen* screen;
-	int currentScreen;
-	Window rootWindow;
-	Window window;
+	void FillKeyCodes() noexcept;
+
+	void DispatchEvent(XEvent const *event) noexcept;
+private:
+	std::unique_ptr<IOLinuxWindowHandle> handle;
+	
+	std::array<unsigned, 256> keyCodes;
 };
 
 #endif
